@@ -135,7 +135,7 @@ int main(void)
 			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
 			uint8_t sum = 0;
       Radar_checksum = RadarRxBuf[14];//校验和赋值
-      for(i = 1;i < 13;i++)
+      for(i = 1;i < 14;i++)
       {
         sum += RadarRxBuf[i];
       }
