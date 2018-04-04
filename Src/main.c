@@ -1,7 +1,7 @@
 /*
 	纯雷达显示器代码
 	Version：V1.00
-	Date：04/01/2018
+	Date：04/04/2018
 */
 
 /* Includes ------------------------------------------------------------------*/
@@ -49,7 +49,8 @@ static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-uint8_t Radar_8Probe[MAX_PROBE_NUM]={0};
+uint8_t Radar_8Probe[MAX_PROBE_NUM] = {0};
+uint8_t Radar_10Probe[MAX_PROBE_NUM] = {0};
 uint8_t Radar_checksum = 0;
 
 struct 
@@ -145,24 +146,29 @@ int main(void)
   			{
           if(8 == MAX_PROBE_NUM)    //如果是8探头
           {
-            /*for(i = 1; i < 8; i++)  //探头后四、前3数据
-            {
-              Radar_8Probe[i-1] = (uint8_t)(RadarRxBuf[i]) / 100.0;//十六进制转10进制后除以100
-            }
-            Radar_8Probe[7] = (uint8_t)(RadarRxBuf[12]) / 100.0;//8探头8号探头数据
-          */
+            //顺序为8#6#5#7#1#2#4#****3#
+            //      1 2 3 4 5 6 7     12
+            Radar_8Probe[8 - 1] = RadarRxBuf[1];//给探头赋值雷达数据，数组编号为逻辑编号-1
+            Radar_8Probe[6 - 1] = RadarRxBuf[2];
+            Radar_8Probe[5 - 1] = RadarRxBuf[3];
+            Radar_8Probe[7 - 1] = RadarRxBuf[4];
+            Radar_8Probe[1 - 1] = RadarRxBuf[5];
+            Radar_8Probe[2 - 1] = RadarRxBuf[6];
+            Radar_8Probe[4 - 1] = RadarRxBuf[7];
+            Radar_8Probe[3 - 1] = RadarRxBuf[12];
 					}
           else                      //10探头
           {
-            /*for(i = 1; i < 4; i++)  //后3探头
+            //顺序为8#9#10#*1#2#3#4#5#6#7#*
+            //      1 2 3   5 6 7 8 9 10 11
+            for(i = 1; i < 4; i++)//赋值后三个探头，编号为8.9.10
             {
-              Radar_10Probe[i-1] = (uint8_t)(RadarRxBuf[i]) / 100.0;
+              Radar_10Probe[i + 6] = RadarRxBuf[i];
             }
-            for(i = 5; i < 12; i++) //前3和两侧探头
+            for(i = 1; i < 8; i++)//赋值前3和两侧各两个探头，编号为1~7
             {
-              Radar_10Probe[i-2] = (uint8_t)(RadarRxBuf[i]) / 100.0;
+              Radar_10Probe[i - 1] = RadarRxBuf[i + 4];
             }
-						*/
 					}
 				}
 				//状态信号
@@ -182,8 +188,8 @@ int main(void)
 				case 0x06:				//探头界面-确认按下
 					break;
 				case 0x00:				//音量界面-确认按下
-						WTN6_SetVolume(TFTRxBuf[10]);
-				FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
+					WTN6_SetVolume(TFTRxBuf[10]);
+				  FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
 					break;
 				case 0x02:				//距离界面-确认按下
 					RadarLimitDist=TFTRxBuf[10];

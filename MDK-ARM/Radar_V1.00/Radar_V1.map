@@ -1043,15 +1043,15 @@ Image Symbol Table
     i.__scatterload_zeroinit                 0x08002c40   Section       14  handlers.o(i.__scatterload_zeroinit)
     i.delay_init                             0x08002c50   Section        0  delay.o(i.delay_init)
     i.main                                   0x08002c64   Section        0  main.o(i.main)
-    .constdata                               0x08002ddc   Section       24  system_stm32f1xx.o(.constdata)
-    .constdata                               0x08002df4   Section       46  dwintft_radar.o(.constdata)
+    .constdata                               0x08002e18   Section       24  system_stm32f1xx.o(.constdata)
+    .constdata                               0x08002e30   Section       46  dwintft_radar.o(.constdata)
     .data                                    0x20000000   Section        4  system_stm32f1xx.o(.data)
-    .data                                    0x20000004   Section       15  main.o(.data)
-    .data                                    0x20000014   Section        4  stm32f1xx_hal.o(.data)
-    .data                                    0x20000018   Section        1  delay.o(.data)
-    .bss                                     0x2000001c   Section      460  main.o(.bss)
-    .bss                                     0x200001e8   Section       32  stm32f1xx_hal_flash.o(.bss)
-    STACK                                    0x20000208   Section     1024  startup_stm32f103xb.o(STACK)
+    .data                                    0x20000004   Section       23  main.o(.data)
+    .data                                    0x2000001c   Section        4  stm32f1xx_hal.o(.data)
+    .data                                    0x20000020   Section        1  delay.o(.data)
+    .bss                                     0x20000024   Section      460  main.o(.bss)
+    .bss                                     0x200001f0   Section       32  stm32f1xx_hal_flash.o(.bss)
+    STACK                                    0x20000210   Section     1024  startup_stm32f103xb.o(STACK)
 
     Global Symbols
 
@@ -1209,29 +1209,30 @@ Image Symbol Table
     __scatterload_null                       0x08002c3f   Thumb Code     2  handlers.o(i.__scatterload_null)
     __scatterload_zeroinit                   0x08002c41   Thumb Code    14  handlers.o(i.__scatterload_zeroinit)
     delay_init                               0x08002c51   Thumb Code    16  delay.o(i.delay_init)
-    main                                     0x08002c65   Thumb Code   334  main.o(i.main)
-    AHBPrescTable                            0x08002ddc   Data          16  system_stm32f1xx.o(.constdata)
-    APBPrescTable                            0x08002dec   Data           8  system_stm32f1xx.o(.constdata)
-    Region$$Table$$Base                      0x08002e24   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x08002e44   Number         0  anon$$obj.o(Region$$Table)
+    main                                     0x08002c65   Thumb Code   392  main.o(i.main)
+    AHBPrescTable                            0x08002e18   Data          16  system_stm32f1xx.o(.constdata)
+    APBPrescTable                            0x08002e28   Data           8  system_stm32f1xx.o(.constdata)
+    Region$$Table$$Base                      0x08002e60   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x08002e80   Number         0  anon$$obj.o(Region$$Table)
     SystemCoreClock                          0x20000000   Data           4  system_stm32f1xx.o(.data)
     RadarRxComplete                          0x20000004   Data           1  main.o(.data)
     TFTRxComplete                            0x20000005   Data           1  main.o(.data)
     Radar_8Probe                             0x20000006   Data           8  main.o(.data)
-    Radar_checksum                           0x2000000e   Data           1  main.o(.data)
-    Radar_State                              0x2000000f   Data           4  main.o(.data)
-    uwTick                                   0x20000014   Data           4  stm32f1xx_hal.o(.data)
-    fac_us                                   0x20000018   Data           1  delay.o(.data)
-    hcan                                     0x2000001c   Data          68  main.o(.bss)
-    htim2                                    0x20000060   Data          64  main.o(.bss)
-    huart1                                   0x200000a0   Data          64  main.o(.bss)
-    huart2                                   0x200000e0   Data          64  main.o(.bss)
-    hdma_usart1_rx                           0x20000120   Data          68  main.o(.bss)
-    hdma_usart2_rx                           0x20000164   Data          68  main.o(.bss)
-    RadarRxBuf                               0x200001a8   Data          32  main.o(.bss)
-    TFTRxBuf                                 0x200001c8   Data          32  main.o(.bss)
-    pFlash                                   0x200001e8   Data          32  stm32f1xx_hal_flash.o(.bss)
-    __initial_sp                             0x20000608   Data           0  startup_stm32f103xb.o(STACK)
+    Radar_10Probe                            0x2000000e   Data           8  main.o(.data)
+    Radar_checksum                           0x20000016   Data           1  main.o(.data)
+    Radar_State                              0x20000017   Data           4  main.o(.data)
+    uwTick                                   0x2000001c   Data           4  stm32f1xx_hal.o(.data)
+    fac_us                                   0x20000020   Data           1  delay.o(.data)
+    hcan                                     0x20000024   Data          68  main.o(.bss)
+    htim2                                    0x20000068   Data          64  main.o(.bss)
+    huart1                                   0x200000a8   Data          64  main.o(.bss)
+    huart2                                   0x200000e8   Data          64  main.o(.bss)
+    hdma_usart1_rx                           0x20000128   Data          68  main.o(.bss)
+    hdma_usart2_rx                           0x2000016c   Data          68  main.o(.bss)
+    RadarRxBuf                               0x200001b0   Data          32  main.o(.bss)
+    TFTRxBuf                                 0x200001d0   Data          32  main.o(.bss)
+    pFlash                                   0x200001f0   Data          32  stm32f1xx_hal_flash.o(.bss)
+    __initial_sp                             0x20000610   Data           0  startup_stm32f103xb.o(STACK)
 
 
 
@@ -1241,9 +1242,9 @@ Memory Map of the image
 
   Image Entry point : 0x080000ed
 
-  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x00002e60, Max: 0x00010000, ABSOLUTE)
+  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x00002ea4, Max: 0x00010000, ABSOLUTE)
 
-    Execution Region ER_IROM1 (Base: 0x08000000, Size: 0x00002e44, Max: 0x00010000, ABSOLUTE)
+    Execution Region ER_IROM1 (Base: 0x08000000, Size: 0x00002e80, Max: 0x00010000, ABSOLUTE)
 
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -1385,26 +1386,26 @@ Memory Map of the image
     0x08002c40   0x0000000e   Code   RO         2859    i.__scatterload_zeroinit  mc_w.l(handlers.o)
     0x08002c4e   0x00000002   PAD
     0x08002c50   0x00000014   Code   RO         2703    i.delay_init        delay.o
-    0x08002c64   0x00000178   Code   RO          142    i.main              main.o
-    0x08002ddc   0x00000018   Data   RO           15    .constdata          system_stm32f1xx.o
-    0x08002df4   0x0000002e   Data   RO         2744    .constdata          dwintft_radar.o
-    0x08002e22   0x00000002   PAD
-    0x08002e24   0x00000020   Data   RO         2855    Region$$Table       anon$$obj.o
+    0x08002c64   0x000001b4   Code   RO          142    i.main              main.o
+    0x08002e18   0x00000018   Data   RO           15    .constdata          system_stm32f1xx.o
+    0x08002e30   0x0000002e   Data   RO         2744    .constdata          dwintft_radar.o
+    0x08002e5e   0x00000002   PAD
+    0x08002e60   0x00000020   Data   RO         2855    Region$$Table       anon$$obj.o
 
 
-    Execution Region RW_IRAM1 (Base: 0x20000000, Size: 0x00000608, Max: 0x00005000, ABSOLUTE)
+    Execution Region RW_IRAM1 (Base: 0x20000000, Size: 0x00000610, Max: 0x00005000, ABSOLUTE)
 
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
     0x20000000   0x00000004   Data   RW           16    .data               system_stm32f1xx.o
-    0x20000004   0x0000000f   Data   RW          144    .data               main.o
-    0x20000013   0x00000001   PAD
-    0x20000014   0x00000004   Data   RW         2208    .data               stm32f1xx_hal.o
-    0x20000018   0x00000001   Data   RW         2704    .data               delay.o
-    0x20000019   0x00000003   PAD
-    0x2000001c   0x000001cc   Zero   RW          143    .bss                main.o
-    0x200001e8   0x00000020   Zero   RW         2343    .bss                stm32f1xx_hal_flash.o
-    0x20000208   0x00000400   Zero   RW            1    STACK               startup_stm32f103xb.o
+    0x20000004   0x00000017   Data   RW          144    .data               main.o
+    0x2000001b   0x00000001   PAD
+    0x2000001c   0x00000004   Data   RW         2208    .data               stm32f1xx_hal.o
+    0x20000020   0x00000001   Data   RW         2704    .data               delay.o
+    0x20000021   0x00000003   PAD
+    0x20000024   0x000001cc   Zero   RW          143    .bss                main.o
+    0x200001f0   0x00000020   Zero   RW         2343    .bss                stm32f1xx_hal_flash.o
+    0x20000210   0x00000400   Zero   RW            1    STACK               startup_stm32f103xb.o
 
 
 ==============================================================================
@@ -1417,7 +1418,7 @@ Image component sizes
        120          8          0          1          0       1876   delay.o
         44          6         46          0          0        990   dwintft_radar.o
         86          0          0          0          0       1852   internalflash.o
-      1188        168          0         15        460       5896   main.o
+      1248        170          0         23        460       5998   main.o
         36          8        236          0       1024        776   startup_stm32f103xb.o
        108         20          0          4          0       2939   stm32f1xx_hal.o
       1516         16          0          0          0       5342   stm32f1xx_hal_can.o
@@ -1436,7 +1437,7 @@ Image component sizes
        148          4          0          0          0       1130   wtn6.o
 
     ----------------------------------------------------------------------
-     11348        664        340         28       1516     547202   Object Totals
+     11408        666        340         36       1516     547304   Object Totals
          0          0         32          0          0          0   (incl. Generated)
         18          0          2          4          0          0   (incl. Padding)
 
@@ -1477,15 +1478,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     11504        680        340         28       1516     541942   Grand Totals
-     11504        680        340         28       1516     541942   ELF Image Totals
-     11504        680        340         28          0          0   ROM Totals
+     11564        682        340         36       1516     542044   Grand Totals
+     11564        682        340         36       1516     542044   ELF Image Totals
+     11564        682        340         36          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                11844 (  11.57kB)
-    Total RW  Size (RW Data + ZI Data)              1544 (   1.51kB)
-    Total ROM Size (Code + RO Data + RW Data)      11872 (  11.59kB)
+    Total RO  Size (Code + RO Data)                11904 (  11.63kB)
+    Total RW  Size (RW Data + ZI Data)              1552 (   1.52kB)
+    Total ROM Size (Code + RO Data + RW Data)      11940 (  11.66kB)
 
 ==============================================================================
 
