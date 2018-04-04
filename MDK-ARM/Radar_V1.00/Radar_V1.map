@@ -1,4 +1,4 @@
-Component: ARM Compiler 5.06 update 4 (build 422) Tool: armlink [4d35d2]
+Component: ARM Compiler 5.06 update 1 (build 61) Tool: armlink [4d35a8]
 
 ==============================================================================
 
@@ -925,7 +925,7 @@ Image Symbol Table
     i.FlashErase                             0x080005cc   Section        0  internalflash.o(i.FlashErase)
     i.FlashRead32bit                         0x080005f6   Section        0  internalflash.o(i.FlashRead32bit)
     i.FlashWrite_SingleUint32                0x080005fc   Section        0  internalflash.o(i.FlashWrite_SingleUint32)
-    i.HAL_CAN_ErrorCallback                  0x08000620   Section        0  stm32f1xx_hal_can.o(i.HAL_CAN_ErrorCallback)
+    i.HAL_CAN_ErrorCallback                  0x08000622   Section        0  stm32f1xx_hal_can.o(i.HAL_CAN_ErrorCallback)
     i.HAL_CAN_IRQHandler                     0x08000624   Section        0  stm32f1xx_hal_can.o(i.HAL_CAN_IRQHandler)
     i.HAL_CAN_Init                           0x08000878   Section        0  stm32f1xx_hal_can.o(i.HAL_CAN_Init)
     i.HAL_CAN_MspInit                        0x080009e8   Section        0  stm32f1xx_hal_msp.o(i.HAL_CAN_MspInit)
@@ -1131,8 +1131,8 @@ Image Symbol Table
     FLASH_WaitForLastOperation               0x0800055d   Thumb Code   106  stm32f1xx_hal_flash.o(i.FLASH_WaitForLastOperation)
     FlashErase                               0x080005cd   Thumb Code    42  internalflash.o(i.FlashErase)
     FlashRead32bit                           0x080005f7   Thumb Code     6  internalflash.o(i.FlashRead32bit)
-    FlashWrite_SingleUint32                  0x080005fd   Thumb Code    36  internalflash.o(i.FlashWrite_SingleUint32)
-    HAL_CAN_ErrorCallback                    0x08000621   Thumb Code     2  stm32f1xx_hal_can.o(i.HAL_CAN_ErrorCallback)
+    FlashWrite_SingleUint32                  0x080005fd   Thumb Code    38  internalflash.o(i.FlashWrite_SingleUint32)
+    HAL_CAN_ErrorCallback                    0x08000623   Thumb Code     2  stm32f1xx_hal_can.o(i.HAL_CAN_ErrorCallback)
     HAL_CAN_IRQHandler                       0x08000625   Thumb Code   580  stm32f1xx_hal_can.o(i.HAL_CAN_IRQHandler)
     HAL_CAN_Init                             0x08000879   Thumb Code   366  stm32f1xx_hal_can.o(i.HAL_CAN_Init)
     HAL_CAN_MspInit                          0x080009e9   Thumb Code   102  stm32f1xx_hal_msp.o(i.HAL_CAN_MspInit)
@@ -1278,9 +1278,8 @@ Memory Map of the image
     0x0800055c   0x00000070   Code   RO         2331    i.FLASH_WaitForLastOperation  stm32f1xx_hal_flash.o
     0x080005cc   0x0000002a   Code   RO         2783    i.FlashErase        internalflash.o
     0x080005f6   0x00000006   Code   RO         2784    i.FlashRead32bit    internalflash.o
-    0x080005fc   0x00000024   Code   RO         2785    i.FlashWrite_SingleUint32  internalflash.o
-    0x08000620   0x00000002   Code   RO         1764    i.HAL_CAN_ErrorCallback  stm32f1xx_hal_can.o
-    0x08000622   0x00000002   PAD
+    0x080005fc   0x00000026   Code   RO         2785    i.FlashWrite_SingleUint32  internalflash.o
+    0x08000622   0x00000002   Code   RO         1764    i.HAL_CAN_ErrorCallback  stm32f1xx_hal_can.o
     0x08000624   0x00000254   Code   RO         1767    i.HAL_CAN_IRQHandler  stm32f1xx_hal_can.o
     0x08000878   0x0000016e   Code   RO         1768    i.HAL_CAN_Init      stm32f1xx_hal_can.o
     0x080009e6   0x00000002   PAD
@@ -1415,31 +1414,31 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-       120          8          0          1          0       1924   delay.o
-        44          6         46          0          0       1014   dwintft_radar.o
-        84          0          0          0          0       1888   internalflash.o
-      1188        168          0         15        460       6028   main.o
-        36          8        236          0       1024        788   startup_stm32f103xb.o
-       108         20          0          4          0       3011   stm32f1xx_hal.o
-      1516         16          0          0          0       5430   stm32f1xx_hal_can.o
-       348         22          0          0          0      27705   stm32f1xx_hal_cortex.o
-       782          8          0          0          0       4003   stm32f1xx_hal_dma.o
-       516         50          0          0         32       4066   stm32f1xx_hal_flash.o
-       256         26          0          0          0       2495   stm32f1xx_hal_flash_ex.o
-       816         32          0          0          0       3185   stm32f1xx_hal_gpio.o
-       692         86          0          0          0       2942   stm32f1xx_hal_msp.o
-      1776        110          0          0          0       5824   stm32f1xx_hal_rcc.o
-      1020         14          0          0          0       8811   stm32f1xx_hal_tim.o
-       102          0          0          0          0       2198   stm32f1xx_hal_tim_ex.o
-      1412         20          0          0          0       9331   stm32f1xx_hal_uart.o
-       276         48          0          0          0       7370   stm32f1xx_it.o
-        88         18         24          4          0     449803   system_stm32f1xx.o
-       148          4          0          0          0       1154   wtn6.o
+       120          8          0          1          0       1876   delay.o
+        44          6         46          0          0        990   dwintft_radar.o
+        86          0          0          0          0       1852   internalflash.o
+      1188        168          0         15        460       5896   main.o
+        36          8        236          0       1024        776   startup_stm32f103xb.o
+       108         20          0          4          0       2939   stm32f1xx_hal.o
+      1516         16          0          0          0       5342   stm32f1xx_hal_can.o
+       348         22          0          0          0      27585   stm32f1xx_hal_cortex.o
+       782          8          0          0          0       3931   stm32f1xx_hal_dma.o
+       516         50          0          0         32       3978   stm32f1xx_hal_flash.o
+       256         26          0          0          0       2447   stm32f1xx_hal_flash_ex.o
+       816         32          0          0          0       3137   stm32f1xx_hal_gpio.o
+       692         86          0          0          0       2882   stm32f1xx_hal_msp.o
+      1776        110          0          0          0       5728   stm32f1xx_hal_rcc.o
+      1020         14          0          0          0       8643   stm32f1xx_hal_tim.o
+       102          0          0          0          0       2150   stm32f1xx_hal_tim_ex.o
+      1412         20          0          0          0       9151   stm32f1xx_hal_uart.o
+       276         48          0          0          0       7178   stm32f1xx_it.o
+        88         18         24          4          0     449591   system_stm32f1xx.o
+       148          4          0          0          0       1130   wtn6.o
 
     ----------------------------------------------------------------------
-     11348        664        340         28       1516     548970   Object Totals
+     11348        664        340         28       1516     547202   Object Totals
          0          0         32          0          0          0   (incl. Generated)
-        20          0          2          4          0          0   (incl. Padding)
+        18          0          2          4          0          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 
@@ -1478,8 +1477,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     11504        680        340         28       1516     543710   Grand Totals
-     11504        680        340         28       1516     543710   ELF Image Totals
+     11504        680        340         28       1516     541942   Grand Totals
+     11504        680        340         28       1516     541942   ELF Image Totals
      11504        680        340         28          0          0   ROM Totals
 
 ==============================================================================
