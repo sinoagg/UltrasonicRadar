@@ -1,0 +1,4 @@
+#project creating files
+*.o
+*.d
+
