@@ -1,12 +1,16 @@
 #include "DWINTFT_Radar.h"
-
-void TFT_DispRadarDist(UART_HandleTypeDef *huart, uint8_t *pRadarDist, uint8_t MaxProbeNum)
+/**
+ * [TFT_DispRadarDist display Radar distination of one probe]
+ * @param huart       [huart number]
+ * @param n           [number of probe]
+ * @param pRadarDist  [Radar pointer]
+ * @param MaxProbeNum [8 or 10]
+ */
+void TFT_DispRadarDist(UART_HandleTypeDef *huart, uint8_t *pRadarDist, uint8_t n, uint8_t MaxProbeNum)
 {
-	uint8_t TxBuf[14]={0x5A,0xA5,0x05,0x82,0x12,0x11};
-	uint8_t i;
-	for(i=0;i<MaxProbeNum;i++)
-		TxBuf[6+i]=*(pRadarDist+i);
-	HAL_UART_Transmit(huart, TxBuf, 14, 100);
+	uint8_t TxBuf[14]={0x5A,0xA5,0x05,0x82,0x12,0x11};//command header,1211 means dinstination
+	TxBuf[6] = *(pRadarDist + n);
+	HAL_UART_Transmit(huart, TxBuf, 7, 100);//7 means size,100 timeout
 }
 
 void TFT_SetRadarOrder(UART_HandleTypeDef *huart, uint8_t *pRadarOrder, uint8_t MaxProbeNum)

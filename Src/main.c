@@ -136,7 +136,7 @@ int main(void)
 			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
 			uint8_t sum = 0;
       Radar_checksum = RadarRxBuf[14];//校验和赋值
-      for(i = 1;i < 14;i++)
+      for(i = 1;i < 14;i++)//计算收到的数据的和
       {
         sum += RadarRxBuf[i];
       }
@@ -146,6 +146,7 @@ int main(void)
   			{
           if(8 == MAX_PROBE_NUM)    //如果是8探头
           {
+            //给探头数据赋值
             //顺序为8#6#5#7#1#2#4#****3#
             //      1 2 3 4 5 6 7     12
             Radar_8Probe[8 - 1] = RadarRxBuf[1];//给探头赋值雷达数据，数组编号为逻辑编号-1
@@ -156,9 +157,12 @@ int main(void)
             Radar_8Probe[2 - 1] = RadarRxBuf[6];
             Radar_8Probe[4 - 1] = RadarRxBuf[7];
             Radar_8Probe[3 - 1] = RadarRxBuf[12];
+            //显示屏显示0#探头数据
+            TFT_DispRadarDist(&huart2, Radar_8Probe, 0, MAX_PROBE_NUM);
 					}
           else                      //10探头
           {
+            //给探头数据赋值
             //顺序为8#9#10#*1#2#3#4#5#6#7#*
             //      1 2 3   5 6 7 8 9 10 11
             for(i = 1; i < 4; i++)//赋值后三个探头，编号为8.9.10
@@ -169,6 +173,8 @@ int main(void)
             {
               Radar_10Probe[i - 1] = RadarRxBuf[i + 4];
             }
+            //显示屏显示0#探头数据
+            TFT_DispRadarDist(&huart2, Radar_10Probe, 0, MAX_PROBE_NUM);
 					}
 				}
 				//状态信号
