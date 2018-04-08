@@ -158,7 +158,9 @@ int main(void)
             Radar_8Probe[4 - 1] = RadarRxBuf[7];
             Radar_8Probe[3 - 1] = RadarRxBuf[12];
             //显示屏显示0#探头数据
-            TFT_DispRadarDist(&huart2, Radar_8Probe, 0, MAX_PROBE_NUM);
+            TFT_DispRadarDist(&huart2, Radar_8Probe, 5);
+						//显示屏显示颜色表示探头距离
+						TFT_DispRadarColor(&huart2, Radar_8Probe, MAX_PROBE_NUM);
 					}
           else                      //10探头
           {
@@ -174,14 +176,16 @@ int main(void)
               Radar_10Probe[i - 1] = RadarRxBuf[i + 4];
             }
             //显示屏显示0#探头数据
-            TFT_DispRadarDist(&huart2, Radar_10Probe, 0, MAX_PROBE_NUM);
+            TFT_DispRadarDist(&huart2, Radar_10Probe, 0);
+						//显示屏显示颜色表示探头距离
+						TFT_DispRadarColor(&huart2, Radar_10Probe, MAX_PROBE_NUM);
 					}
 				}
 				//状态信号
   				Radar_State.fornt_door = RadarRxBuf[13] & 0x01;//bit0表示前门，0开1关
-          Radar_State.rear_door = RadarRxBuf[13] & 0x02; //bit1表示后门，0开1关
-          Radar_State.vehicle_back = RadarRxBuf[13] & 0x04;  //bit2表示倒车状态，0前1倒
-          Radar_State.vehicle_speed = RadarRxBuf[13] & 0x08; //bit3表示车速，0高1低
+          Radar_State.rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0开1关
+          Radar_State.vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
+          Radar_State.vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
 			}
 		}
 
