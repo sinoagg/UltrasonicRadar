@@ -8,6 +8,8 @@
 #define RADAR_LIMIT_OFFSET_ADDR 0x00   	//雷达检测距离偏移量存储地址
 #define RADAR_PROBE_VERSION_ADDR 0x04		//雷达8探或者10探版本
 #define WTN6_VOLUME_OFFSET_ADDR 0x08
+#define RADAR_EXCHANGE1_OFFSET_ADDR 0x0C //雷达要交换的探头编号地址
+#define RADAR_EXCHANGE2_OFFSET_ADDR 0x10 //雷达要交换的探头编号地址
 
 void GetFlashData_U32(uint32_t* pdata, uint32_t flash_addr, uint8_t length);
 uint32_t GetFlashData_SingleUint32(uint32_t flash_addr);

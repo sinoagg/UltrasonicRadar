@@ -73,7 +73,11 @@ int main(void)
 	uint8_t i;
 	uint32_t RadarLimitDist=0x96;					//默认是1.5米
 	uint32_t WTN6_Volume=0x03;						//默认最大音量
+  uint32_t RadarExchangeIndex1=0x00;    //雷达探头交换序号1
+  uint32_t RadarExchangeIndex2=0x01;    //雷达探头交换序号2
 	uint8_t AlarmOn=0;
+  uint8_t Radar_Exchange_flag = 0;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -117,6 +121,19 @@ int main(void)
 		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
 	}
 	WTN6_SetVolume((uint8_t)WTN6_Volume);
+
+  RadarExchangeIndex1 = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR);
+  RadarExchangeIndex2 = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR);
+  if(RadarExchangeIndex1 & 0xFF == 0xFF)
+  {
+    RadarExchangeIndex1 = 0x00;
+    FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+  }
+  if(RadarExchangeIndex2 & 0xFF == 0xFF)
+  {
+    RadarExchangeIndex2 = 0x00;
+    FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
+  }
 	
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);//radar interrupt enable
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);//TFT interrupt enable
@@ -194,9 +211,24 @@ int main(void)
 			switch(TFTRxBuf[5])
 			{
 				case 0x04:				//探头界面-探头按下
+					//写flash存要交换的两个探头序号
+          if(!Radar_Exchange_flag)
+          {
+            Radar_Exchange_flag = 1;
+            RadarExchangeIndex1 = TFTRxBuf[10];
+            FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+          }
+          else
+          {
+            Radar_Exchange_flag = 0;
+            RadarExchangeIndex2 = TFTRxBuf[10];
+            FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
+          }
 					break;
 				case 0x06:				//探头界面-确认按下
-					break;
+					//调用交换探头函数
+					TFT_ExchangeRadarOrder(&huart2, RadarExchangeIndex1, RadarExchangeIndex2, MAX_PROBE_NUM);
+          break;
 				case 0x00:				//音量界面-确认按下
 					WTN6_SetVolume(TFTRxBuf[10]);
 				  FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
