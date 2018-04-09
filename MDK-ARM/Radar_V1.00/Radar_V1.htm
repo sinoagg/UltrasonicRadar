@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Radar_V1.00\Radar_V1.00]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Radar_V1.00\Radar_V1.00</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Mon Apr 09 13:55:09 2018
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060061: Last Updated: Mon Apr 09 14:48:40 2018
 <BR><P>
 <H3>Maximum Stack Usage =        152 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -786,7 +786,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[35]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[97]"></a>TFT_ExchangeRadarOrder</STRONG> (Thumb, 54 bytes, Stack size 40 bytes, dwintft_radar.o(i.TFT_ExchangeRadarOrder))
+<P><STRONG><a name="[97]"></a>TFT_ExchangeRadarOrder</STRONG> (Thumb, 50 bytes, Stack size 40 bytes, dwintft_radar.o(i.TFT_ExchangeRadarOrder))
 <BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = TFT_ExchangeRadarOrder &rArr; TFT_SetRadarOrder &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TFT_SetRadarOrder
@@ -794,7 +794,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[35]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[99]"></a>TFT_SetProbeVersion</STRONG> (Thumb, 38 bytes, Stack size 40 bytes, dwintft_radar.o(i.TFT_SetProbeVersion))
+<P><STRONG><a name="[99]"></a>TFT_SetProbeVersion</STRONG> (Thumb, 42 bytes, Stack size 40 bytes, dwintft_radar.o(i.TFT_SetProbeVersion))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = TFT_SetProbeVersion &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
@@ -888,7 +888,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[35]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[35]"></a>main</STRONG> (Thumb, 540 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[35]"></a>main</STRONG> (Thumb, 542 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = main &rArr; SystemClock_Config &rArr; HAL_RCC_ClockConfig &rArr; HAL_InitTick &rArr; HAL_NVIC_SetPriority &rArr; NVIC_SetPriority
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay_init

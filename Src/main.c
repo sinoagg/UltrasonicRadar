@@ -74,7 +74,7 @@ int main(void)
 	uint32_t RadarLimitDist=0x96;					//默认是1.5米
 	uint32_t WTN6_Volume=0x03;						//默认最大音量
   uint32_t RadarExchangeIndex1=0x00;    //雷达探头交换序号1
-  uint32_t RadarExchangeIndex2=0x01;    //雷达探头交换序号2
+  uint32_t RadarExchangeIndex2=0x00;    //雷达探头交换序号2
 	uint8_t AlarmOn=0;
   uint8_t Radar_Exchange_flag = 0;
 
@@ -109,13 +109,13 @@ int main(void)
 	TFT_SetProbeVersion(&huart2, PROBE_VERSION);
 	
 	RadarLimitDist=FlashRead32bit(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR);
-	if(RadarLimitDist&0xFF==0xFF)		//如果此地址为空
+	if((RadarLimitDist&0xFF)==0xFF)		//如果此地址为空
 	{
 		RadarLimitDist=0x96;
 		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
 	}
 	WTN6_Volume=FlashRead32bit(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR);
-	if(WTN6_Volume&0xFF==0xFF)
+	if((WTN6_Volume&0xFF)==0xFF)
 	{
 		WTN6_Volume=0x03;
 		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
@@ -124,12 +124,12 @@ int main(void)
 
   RadarExchangeIndex1 = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR);
   RadarExchangeIndex2 = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR);
-  if(RadarExchangeIndex1 & 0xFF == 0xFF)
+  if((RadarExchangeIndex1 & 0xFF) == 0xFF)
   {
     RadarExchangeIndex1 = 0x00;
     FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
   }
-  if(RadarExchangeIndex2 & 0xFF == 0xFF)
+  if((RadarExchangeIndex2 & 0xFF) == 0xFF)
   {
     RadarExchangeIndex2 = 0x00;
     FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
