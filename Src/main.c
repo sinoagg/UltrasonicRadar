@@ -158,7 +158,7 @@ int main(void)
             Radar_8Probe[4 - 1] = RadarRxBuf[7];
             Radar_8Probe[3 - 1] = RadarRxBuf[12];
             //显示屏显示0#探头数据
-            TFT_DispRadarDist(&huart2, Radar_8Probe, 5);
+            TFT_DispRadarDist(&huart2, Radar_8Probe, 0);
 						//显示屏显示颜色表示探头距离
 						TFT_DispRadarColor(&huart2, Radar_8Probe, MAX_PROBE_NUM);
 					}
