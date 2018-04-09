@@ -809,7 +809,7 @@ Removing Unused input sections from the image.
     Removing dwintft_radar.o(.revsh_text), (4 bytes).
     Removing dwintft_radar.o(.rrx_text), (6 bytes).
     Removing dwintft_radar.o(i.TFT_DispVechileSpeed), (2 bytes).
-    Removing dwintft_radar.o(i.TFT_ExchangeRadarOrder), (50 bytes).
+    Removing dwintft_radar.o(i.TFT_ExchangeRadarOrder), (54 bytes).
     Removing dwintft_radar.o(i.TFT_SetRadarOrder), (88 bytes).
     Removing internalflash.o(.rev16_text), (4 bytes).
     Removing internalflash.o(.revsh_text), (4 bytes).
@@ -817,7 +817,7 @@ Removing Unused input sections from the image.
     Removing internalflash.o(i.GetFlashData_SingleUint32), (12 bytes).
     Removing internalflash.o(i.GetFlashData_U32), (32 bytes).
 
-346 unused section(s) (total 25790 bytes) removed from the image.
+346 unused section(s) (total 25794 bytes) removed from the image.
 
 ==============================================================================
 
