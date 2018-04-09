@@ -435,6 +435,7 @@ Section Cross References
     dwintft_radar.o(i.TFT_DispRadarColor) refers to dwintft_radar.o(.constdata) for .constdata
     dwintft_radar.o(i.TFT_DispRadarDist) refers to stm32f1xx_hal_uart.o(i.HAL_UART_Transmit) for HAL_UART_Transmit
     dwintft_radar.o(i.TFT_DispRadarDist) refers to dwintft_radar.o(.constdata) for .constdata
+    dwintft_radar.o(i.TFT_ExchangeRadarOrder) refers to dwintft_radar.o(i.TFT_SetRadarOrder) for TFT_SetRadarOrder
     dwintft_radar.o(i.TFT_SetProbeVersion) refers to memcpya.o(.text) for __aeabi_memcpy4
     dwintft_radar.o(i.TFT_SetProbeVersion) refers to stm32f1xx_hal_uart.o(i.HAL_UART_Transmit) for HAL_UART_Transmit
     dwintft_radar.o(i.TFT_SetProbeVersion) refers to dwintft_radar.o(.constdata) for .constdata
@@ -808,14 +809,15 @@ Removing Unused input sections from the image.
     Removing dwintft_radar.o(.revsh_text), (4 bytes).
     Removing dwintft_radar.o(.rrx_text), (6 bytes).
     Removing dwintft_radar.o(i.TFT_DispVechileSpeed), (2 bytes).
-    Removing dwintft_radar.o(i.TFT_SetRadarOrder), (48 bytes).
+    Removing dwintft_radar.o(i.TFT_ExchangeRadarOrder), (50 bytes).
+    Removing dwintft_radar.o(i.TFT_SetRadarOrder), (88 bytes).
     Removing internalflash.o(.rev16_text), (4 bytes).
     Removing internalflash.o(.revsh_text), (4 bytes).
     Removing internalflash.o(.rrx_text), (6 bytes).
     Removing internalflash.o(i.GetFlashData_SingleUint32), (12 bytes).
     Removing internalflash.o(i.GetFlashData_U32), (32 bytes).
 
-345 unused section(s) (total 25700 bytes) removed from the image.
+346 unused section(s) (total 25790 bytes) removed from the image.
 
 ==============================================================================
 
@@ -1256,19 +1258,19 @@ Memory Map of the image
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
     0x08000000   0x000000ec   Data   RO            3    RESET               startup_stm32f103xb.o
-    0x080000ec   0x00000000   Code   RO         2834  * .ARM.Collect$$$$00000000  mc_w.l(entry.o)
-    0x080000ec   0x00000004   Code   RO         2845    .ARM.Collect$$$$00000001  mc_w.l(entry2.o)
-    0x080000f0   0x00000004   Code   RO         2848    .ARM.Collect$$$$00000004  mc_w.l(entry5.o)
-    0x080000f4   0x00000000   Code   RO         2850    .ARM.Collect$$$$00000008  mc_w.l(entry7b.o)
-    0x080000f4   0x00000000   Code   RO         2852    .ARM.Collect$$$$0000000A  mc_w.l(entry8b.o)
-    0x080000f4   0x00000008   Code   RO         2853    .ARM.Collect$$$$0000000B  mc_w.l(entry9a.o)
-    0x080000fc   0x00000000   Code   RO         2855    .ARM.Collect$$$$0000000D  mc_w.l(entry10a.o)
-    0x080000fc   0x00000000   Code   RO         2857    .ARM.Collect$$$$0000000F  mc_w.l(entry11a.o)
-    0x080000fc   0x00000004   Code   RO         2846    .ARM.Collect$$$$00002712  mc_w.l(entry2.o)
+    0x080000ec   0x00000000   Code   RO         2840  * .ARM.Collect$$$$00000000  mc_w.l(entry.o)
+    0x080000ec   0x00000004   Code   RO         2851    .ARM.Collect$$$$00000001  mc_w.l(entry2.o)
+    0x080000f0   0x00000004   Code   RO         2854    .ARM.Collect$$$$00000004  mc_w.l(entry5.o)
+    0x080000f4   0x00000000   Code   RO         2856    .ARM.Collect$$$$00000008  mc_w.l(entry7b.o)
+    0x080000f4   0x00000000   Code   RO         2858    .ARM.Collect$$$$0000000A  mc_w.l(entry8b.o)
+    0x080000f4   0x00000008   Code   RO         2859    .ARM.Collect$$$$0000000B  mc_w.l(entry9a.o)
+    0x080000fc   0x00000000   Code   RO         2861    .ARM.Collect$$$$0000000D  mc_w.l(entry10a.o)
+    0x080000fc   0x00000000   Code   RO         2863    .ARM.Collect$$$$0000000F  mc_w.l(entry11a.o)
+    0x080000fc   0x00000004   Code   RO         2852    .ARM.Collect$$$$00002712  mc_w.l(entry2.o)
     0x08000100   0x00000024   Code   RO            4    .text               startup_stm32f103xb.o
-    0x08000124   0x00000020   Code   RO         2837    .text               mc_w.l(llushr.o)
-    0x08000144   0x00000024   Code   RO         2839    .text               mc_w.l(memcpya.o)
-    0x08000168   0x00000024   Code   RO         2859    .text               mc_w.l(init.o)
+    0x08000124   0x00000020   Code   RO         2843    .text               mc_w.l(llushr.o)
+    0x08000144   0x00000024   Code   RO         2845    .text               mc_w.l(memcpya.o)
+    0x08000168   0x00000024   Code   RO         2865    .text               mc_w.l(init.o)
     0x0800018c   0x00000004   Code   RO          281    i.BusFault_Handler  stm32f1xx_it.o
     0x08000190   0x000001c2   Code   RO         1760    i.CAN_Receive_IT    stm32f1xx_hal_can.o
     0x08000352   0x00000062   Code   RO         1761    i.CAN_Transmit_IT   stm32f1xx_hal_can.o
@@ -1284,9 +1286,9 @@ Memory Map of the image
     0x080004b8   0x00000020   Code   RO         2329    i.FLASH_Program_HalfWord  stm32f1xx_hal_flash.o
     0x080004d8   0x00000084   Code   RO         2330    i.FLASH_SetErrorCode  stm32f1xx_hal_flash.o
     0x0800055c   0x00000070   Code   RO         2331    i.FLASH_WaitForLastOperation  stm32f1xx_hal_flash.o
-    0x080005cc   0x0000002a   Code   RO         2789    i.FlashErase        internalflash.o
-    0x080005f6   0x00000006   Code   RO         2790    i.FlashRead32bit    internalflash.o
-    0x080005fc   0x00000026   Code   RO         2791    i.FlashWrite_SingleUint32  internalflash.o
+    0x080005cc   0x0000002a   Code   RO         2795    i.FlashErase        internalflash.o
+    0x080005f6   0x00000006   Code   RO         2796    i.FlashRead32bit    internalflash.o
+    0x080005fc   0x00000026   Code   RO         2797    i.FlashWrite_SingleUint32  internalflash.o
     0x08000622   0x00000002   Code   RO         1764    i.HAL_CAN_ErrorCallback  stm32f1xx_hal_can.o
     0x08000624   0x00000254   Code   RO         1767    i.HAL_CAN_IRQHandler  stm32f1xx_hal_can.o
     0x08000878   0x0000016e   Code   RO         1768    i.HAL_CAN_Init      stm32f1xx_hal_can.o
@@ -1368,7 +1370,7 @@ Memory Map of the image
     0x08002640   0x00000058   Code   RO           14    i.SystemInit        system_stm32f1xx.o
     0x08002698   0x000000c0   Code   RO         2740    i.TFT_DispRadarColor  dwintft_radar.o
     0x08002758   0x00000034   Code   RO         2741    i.TFT_DispRadarDist  dwintft_radar.o
-    0x0800278c   0x0000002c   Code   RO         2743    i.TFT_SetProbeVersion  dwintft_radar.o
+    0x0800278c   0x0000002c   Code   RO         2744    i.TFT_SetProbeVersion  dwintft_radar.o
     0x080027b8   0x00000010   Code   RO          291    i.TIM2_IRQHandler   stm32f1xx_it.o
     0x080027c8   0x00000074   Code   RO          574    i.TIM_Base_SetConfig  stm32f1xx_hal_tim.o
     0x0800283c   0x00000018   Code   RO          581    i.TIM_ETR_SetConfig  stm32f1xx_hal_tim.o
@@ -1390,16 +1392,16 @@ Memory Map of the image
     0x08002c90   0x00000080   Code   RO         2665    i.WTN6_Broadcast    wtn6.o
     0x08002d10   0x00000014   Code   RO         2667    i.WTN6_SetVolume    wtn6.o
     0x08002d24   0x00000004   Code   RO          141    i._Error_Handler    main.o
-    0x08002d28   0x0000000e   Code   RO         2863    i.__scatterload_copy  mc_w.l(handlers.o)
-    0x08002d36   0x00000002   Code   RO         2864    i.__scatterload_null  mc_w.l(handlers.o)
-    0x08002d38   0x0000000e   Code   RO         2865    i.__scatterload_zeroinit  mc_w.l(handlers.o)
+    0x08002d28   0x0000000e   Code   RO         2869    i.__scatterload_copy  mc_w.l(handlers.o)
+    0x08002d36   0x00000002   Code   RO         2870    i.__scatterload_null  mc_w.l(handlers.o)
+    0x08002d38   0x0000000e   Code   RO         2871    i.__scatterload_zeroinit  mc_w.l(handlers.o)
     0x08002d46   0x00000002   PAD
     0x08002d48   0x00000014   Code   RO         2703    i.delay_init        delay.o
     0x08002d5c   0x000001c8   Code   RO          142    i.main              main.o
     0x08002f24   0x00000018   Data   RO           15    .constdata          system_stm32f1xx.o
-    0x08002f3c   0x0000002e   Data   RO         2745    .constdata          dwintft_radar.o
+    0x08002f3c   0x0000002e   Data   RO         2746    .constdata          dwintft_radar.o
     0x08002f6a   0x00000002   PAD
-    0x08002f6c   0x00000020   Data   RO         2861    Region$$Table       anon$$obj.o
+    0x08002f6c   0x00000020   Data   RO         2867    Region$$Table       anon$$obj.o
 
 
     Execution Region RW_IRAM1 (Base: 0x20000000, Size: 0x00000610, Max: 0x00005000, ABSOLUTE)

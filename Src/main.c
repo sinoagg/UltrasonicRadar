@@ -182,10 +182,10 @@ int main(void)
 					}
 				}
 				//状态信号
-  				Radar_State.fornt_door = RadarRxBuf[13] & 0x01;//bit0表示前门，0开1关
-          Radar_State.rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0开1关
-          Radar_State.vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
-          Radar_State.vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
+  			Radar_State.fornt_door = RadarRxBuf[13] & 0x01;//bit0表示前门，0开1关
+        Radar_State.rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0开1关
+        Radar_State.vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
+        Radar_State.vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
 			}
 		}
 

@@ -76,14 +76,41 @@ void TFT_DispRadarColor(UART_HandleTypeDef *huart, uint8_t *pRadarColor, uint8_t
 /**
  * [TFT_SetRadarOrder]
  * @param huart       [huart index]
- * @param pRadarOrder [Radar probe pointer]
+ * @param pRadarOrder [Radar probe order pointer]
  * @param MaxProbeNum [8 or 10]
  */
 void TFT_SetRadarOrder(UART_HandleTypeDef *huart, uint8_t *pRadarOrder, uint8_t MaxProbeNum)
 {
-	uint8_t TxBuf[22]={0x5A,0xA5,0x13,0x82,0x20,0x04};
-	/* unfinished*/
-	HAL_UART_Transmit(huart, TxBuf, 22, 100);
+	uint8_t TxBuf[26] = {0x5A,0xA5,0x13,0x82,0x20,0x04};//command header,to send probe order
+	if(10 == MaxProbeNum)
+		TxBuf[2] = 0x17;
+	uint8_t i;
+	for(i = 0; i < MaxProbeNum; i++)
+	{
+		TxBuf[6 + 2 * i] = 0x00;
+		TxBuf[7 + 2 * i] = *(pRadarOrder + i);
+	}
+	HAL_UART_Transmit(huart, TxBuf, 26, 100);
+}
+
+/**
+ * [TFT_ExchangeRadarOrder]
+ * @param huart       [huart index]
+ * @param n1          [probe index 1]
+ * @param n2          [probe index 2]
+ * @param MaxProbeNum [8 or 10]
+ */
+void TFT_ExchangeRadarOrder(UART_HandleTypeDef *huart, uint8_t n1, uint8_t n2, uint8_t MaxProbeNum)
+{
+	uint8_t i;
+	uint8_t RadarOrder[10];
+	for(i = 0; i < MaxProbeNum; i++)
+	{
+		RadarOrder[i] = i;
+	}
+	RadarOrder[n1] = n2;//交换探头顺序序号
+	RadarOrder[n2] = n1;
+	TFT_SetRadarOrder(huart, RadarOrder, MaxProbeNum);
 }
 
 void TFT_DispVechileSpeed(uint8_t speed)
