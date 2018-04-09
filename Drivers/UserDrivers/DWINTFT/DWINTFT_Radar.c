@@ -120,7 +120,7 @@ void TFT_ExchangeRadarOrder(UART_HandleTypeDef *huart, uint8_t n1, uint8_t n2, u
  */
 void TFT_DispVechileSpeed(UART_HandleTypeDef *huart, uint8_t speed)
 {
-	uint8_t TxBuf[8] = {0x5A,0xA5,0x05,0x82,0x12,0x10,0x00};//command header,to send probe order
+	uint8_t TxBuf[8] = {0x5A,0xA5,0x05,0x82,0x12,0x10,0x00};//command header,to send speed
 	TxBuf[7] = speed;
 	HAL_UART_Transmit(huart, TxBuf, 8, 100);
 }

@@ -36,6 +36,7 @@ uint8_t RadarRxComplete=0;				//雷达串口收到数据标志位
 uint8_t TFTRxComplete=0;					//触摸屏收到数据标志位
 uint8_t RadarRxBuf[32];						//雷达接收缓存
 uint8_t TFTRxBuf[32];							//触摸屏接收缓存
+uint8_t CANTxBuf[8]={0x00,0x7D,0x7D,0xAF,0x64,0x64,0x64,0xFF};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -203,6 +204,8 @@ int main(void)
         Radar_State.rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0开1关
         Radar_State.vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
         Radar_State.vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
+				//显示屏显示车速
+				TFT_DispVechileSpeed(&huart2, Radar_State.vehicle_speed);//send speed read from can
 			}
 		}
 
