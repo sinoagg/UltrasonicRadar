@@ -102,15 +102,15 @@ void TFT_SetRadarOrder(UART_HandleTypeDef *huart, uint8_t *pRadarOrder, uint8_t 
  */
 void TFT_ExchangeRadarOrder(UART_HandleTypeDef *huart, uint8_t n1, uint8_t n2, uint8_t MaxProbeNum)
 {
-	uint8_t i;
-	uint8_t RadarOrder[10];
-	for(i = 0; i < MaxProbeNum; i++)
+	//uint8_t i;
+	//uint8_t RadarOrder[10];
+	/*for(i = 0; i < MaxProbeNum; i++)
 	{
 		RadarOrder[i] = i;
-	}
-	RadarOrder[n1 + 1] = n2 + 1;//交换探头顺序序号
-	RadarOrder[n2 + 1] = n1 + 1;
-	TFT_SetRadarOrder(huart, RadarOrder, MaxProbeNum);
+	}*/
+	RadarProbeOrder[n1] = n2;//交换探头顺序序号
+	RadarProbeOrder[n2] = n1;
+	TFT_SetRadarOrder(huart, RadarProbeOrder, MaxProbeNum);
 }
 
 /**
@@ -136,3 +136,12 @@ void TFT_SetProbeVersion(UART_HandleTypeDef *huart, uint8_t ProbeVersion)
 	HAL_UART_Transmit(huart, TxBuf, 18, 100);
 }
 
+/**
+ * [TFT_ReadProbeOrder send instruction to read probe order]
+ * @param huart [huart index]
+ */
+void TFT_ReadProbeOrder(UART_HandleTypeDef *huart)
+{
+	uint8_t TxBuf[] = {0x5A,0xA5,0x04,0x83,0x20,0x04,0x0A};
+	HAL_UART_Transmit(huart, TxBuf, 7, 100);
+}
