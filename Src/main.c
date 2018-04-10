@@ -216,7 +216,7 @@ int main(void)
 
 		if(TFTRxComplete == 1)//屏幕信息接收完成，进行解析
 		{
-      for(i = 0; TFTRxBuf[i] == 0X5A && TFTRxBuf[i + 1] == 0XA5 && TFTRxBuf[i + 2] != 0x03; i++){}//检测过滤ack指令
+      for(i = 0; TFTRxBuf[i] == 0X5A && TFTRxBuf[i + 1] == 0XA5 && TFTRxBuf[i + 2] == 0x03; i+=6){}//检测过滤ack指令
  			switch(TFTRxBuf[i + 5])
 			{
 				case 0x04:				//探头界面-探头按下
