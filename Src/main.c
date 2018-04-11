@@ -18,7 +18,7 @@
 #define PROBE_VERSION PROBE_VERSION_8
 #define PROBE_VERSION_8	0x01
 #define PROBE_VERSION_10 0x03
-#define TFT_RX_BUF_SIZE 16
+#define TFT_RX_BUF_SIZE 32
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -155,7 +155,7 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		HAL_UART_Receive_DMA(&huart1, RadarRxBuf, 16);
+		HAL_UART_Receive_DMA(&huart1, RadarRxBuf, 32);
 		HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);
 		if(RadarRxComplete == 1)//雷达接收完成，进行解析
 		{
@@ -176,14 +176,22 @@ int main(void)
             //给探头数据赋值
             //顺序为5#7#8#6#1#2#4#****3#
             //      1 2 3 4 5 6 7     12
-            Radar_8Probe[5 - 1] = RadarRxBuf[1];//给探头数组赋值雷达数据，数组编号为逻辑编号-1
+//            Radar_8Probe[RadarProbeOrder[5 - 1] - 1] = RadarRxBuf[1];//给探头数组赋值雷达数据，数组编号为逻辑编号-1
+//            Radar_8Probe[RadarProbeOrder[7 - 1] - 1] = RadarRxBuf[2];
+//            Radar_8Probe[RadarProbeOrder[8 - 1] - 1] = RadarRxBuf[3];
+//            Radar_8Probe[RadarProbeOrder[6 - 1] - 1] = RadarRxBuf[4];
+//            Radar_8Probe[RadarProbeOrder[1 - 1] - 1] = RadarRxBuf[5];
+//            Radar_8Probe[RadarProbeOrder[2 - 1] - 1] = RadarRxBuf[6];
+//            Radar_8Probe[RadarProbeOrder[4 - 1] - 1] = RadarRxBuf[7];
+//            Radar_8Probe[RadarProbeOrder[3 - 1] - 1] = RadarRxBuf[12];
+						Radar_8Probe[5 - 1] = RadarRxBuf[1];//给探头数组赋值雷达数据，数组编号为逻辑编号-1
             Radar_8Probe[7 - 1] = RadarRxBuf[2];
-            Radar_8Probe[8 - 1] = RadarRxBuf[3];
-            Radar_8Probe[6 - 1] = RadarRxBuf[4];
-            Radar_8Probe[1 - 1] = RadarRxBuf[5];
-            Radar_8Probe[2 - 1] = RadarRxBuf[6];
-            Radar_8Probe[4 - 1] = RadarRxBuf[7];
-            Radar_8Probe[3 - 1] = RadarRxBuf[12];
+            Radar_8Probe[RadarProbeOrder[8 - 1] - 1] = RadarRxBuf[3];
+            Radar_8Probe[RadarProbeOrder[6 - 1] - 1] = RadarRxBuf[4];
+            Radar_8Probe[RadarProbeOrder[1 - 1] - 1] = RadarRxBuf[5];
+            Radar_8Probe[RadarProbeOrder[2 - 1] - 1] = RadarRxBuf[6];
+            Radar_8Probe[RadarProbeOrder[4 - 1] - 1] = RadarRxBuf[7];
+            Radar_8Probe[RadarProbeOrder[3 - 1] - 1] = RadarRxBuf[12];
             //显示屏显示0#探头数据
             TFT_DispRadarDist(&huart2, Radar_8Probe, 0);
 						//显示屏显示颜色（波形）表示探头距离
@@ -196,11 +204,11 @@ int main(void)
             //      1 2 3   5 6 7 8 9 10 11
             for(i = 1; i < 4; i++)//赋值后三个探头，编号为8.9.10
             {
-              Radar_10Probe[i + 6] = RadarRxBuf[i];
+              Radar_10Probe[RadarProbeOrder[i - 1] + 6] = RadarRxBuf[i];
             }
             for(i = 1; i < 8; i++)//赋值前3和两侧各两个探头，编号为1~7
             {
-              Radar_10Probe[i - 1] = RadarRxBuf[i + 4];
+              Radar_10Probe[RadarProbeOrder[i - 1] - 1] = RadarRxBuf[i + 4];
             }
             //显示屏显示0#探头数据
             TFT_DispRadarDist(&huart2, Radar_10Probe, 0);
