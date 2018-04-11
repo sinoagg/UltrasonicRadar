@@ -220,72 +220,63 @@ int main(void)
 		if(TFTRxComplete == 1)//屏幕信息接收完成，进行解析
 		{
 			TFTRxComplete=0;
-      i = 0;
-      while(1)
+      if(TFTRxBuf[0] == 0x5A && TFTRxBuf[1] == 0xA5)//判断帧头
       {
-        if(TFTRxBuf[i] == 0x5A && TFTRxBuf[i + 1] == 0xA5)//查找帧头
+        switch(TFTRxBuf[2])
         {
-          switch(TFTRxBuf[i + 2])
-          {
-            case 0x03:      //检测过滤ack指令
-              i += 5;
-              break;
-            case 0x18:      //读探头顺序
-              for(i = 0; i < MAX_PROBE_NUM; i++)
-              {
-                RadarProbeOrder[i] = TFTRxBuf[8 + 2 * i];//5A A5 18 83 2004 0A +十个字长数据
-              }
-              i += 20;
-              break;
-            case 0x08:      //有按钮按下
-              switch(TFTRxBuf[i + 5])//解析屏幕按钮按下指令
-              {
-                case 0x04:        //探头界面-探头按下
-                  //写flash存要交换的两个探头序号
-                  if(!Radar_Exchange_flag)
+          case 0x03:      //检测过滤ack指令
+            break;
+          case 0x18:      //读探头顺序
+            for(i = 0; i < MAX_PROBE_NUM; i++)
+            {
+              RadarProbeOrder[i] = TFTRxBuf[8 + 2 * i];//5A A5 18 83 2004 0A +十个字长数据
+            }
+            break;
+          case 0x08:      //有按钮按下
+            switch(TFTRxBuf[5])//解析屏幕按钮按下指令
+            {
+              case 0x04:        //探头界面-探头按下
+                //写flash存要交换的两个探头序号
+                if(!Radar_Exchange_flag)
+                {
+                  Radar_Exchange_flag = 1;
+                  RadarExchangeIndex1 = TFTRxBuf[10];
+                  //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+                }
+                else
+                {
+                  Radar_Exchange_flag = 0;
+                  RadarExchangeIndex2 = TFTRxBuf[10];
+                  //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
+                }
+                break;
+              case 0x06:        //探头界面-确认按下
+								if(RadarExchangeIndex1 && RadarExchangeIndex2)
+                {
+                  RadarProbeOrder[RadarExchangeIndex1 - 1] = RadarExchangeIndex2;//交换探头顺序序号
+                  RadarProbeOrder[RadarExchangeIndex2 - 1] = RadarExchangeIndex1;
+                  for(i = 0; i < MAX_PROBE_NUM; i++)
                   {
-                    Radar_Exchange_flag = 1;
-                    RadarExchangeIndex1 = TFTRxBuf[i + 10];
-                    //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+                    FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
                   }
-                  else
-                  {
-                    Radar_Exchange_flag = 0;
-                    RadarExchangeIndex2 = TFTRxBuf[i + 10];
-                    //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
-                  }
-                  break;
-                case 0x06:        //探头界面-确认按下
-									if(!RadarExchangeIndex1 && !RadarExchangeIndex2)
-                  {
-                    RadarProbeOrder[RadarExchangeIndex1 - 1] = RadarExchangeIndex2;//交换探头顺序序号
-                    RadarProbeOrder[RadarExchangeIndex2 - 1] = RadarExchangeIndex1;
-                    for(i = 0; i < MAX_PROBE_NUM; i++)
-                    {
-                      FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
-                    }
-                    //调用设置探头函数
-                    TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
-                  }
-                  break;
-                case 0x00:        //音量界面-确认按下
-                  WTN6_SetVolume(TFTRxBuf[10]);
-                  FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
-                  break;
-                case 0x02:        //距离界面-确认按下
-                  RadarLimitDist=TFTRxBuf[10];
-                  FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
-                  break;
-                default:
-                  break;
-              }
-              i += 10;
-              break;
-            default: break;
-          }
+                  //调用设置探头函数
+                  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
+                }
+                break;
+              case 0x00:        //音量界面-确认按下
+                WTN6_SetVolume(TFTRxBuf[10]);
+                FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
+                break;
+              case 0x02:        //距离界面-确认按下
+                RadarLimitDist=TFTRxBuf[10];
+                FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
+                break;
+              default:
+                break;
+            }
+            break;
+          default: break;
         }
-        i++;
-        if(i == TFT_RX_BUF_SIZE || TFTRxBuf[i] == 0) break;
       }
 		}
 			
