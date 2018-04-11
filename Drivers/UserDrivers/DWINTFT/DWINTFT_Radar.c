@@ -108,8 +108,8 @@ void TFT_ExchangeRadarOrder(UART_HandleTypeDef *huart, uint8_t n1, uint8_t n2, u
 	{
 		RadarOrder[i] = i;
 	}*/
-	RadarProbeOrder[n1] = n2;//交换探头顺序序号
-	RadarProbeOrder[n2] = n1;
+	RadarProbeOrder[n1 - 1] = n2;//交换探头顺序序号
+	RadarProbeOrder[n2 - 1] = n1;
 	TFT_SetRadarOrder(huart, RadarProbeOrder, MaxProbeNum);
 }
 

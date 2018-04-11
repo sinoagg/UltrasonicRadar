@@ -18,7 +18,7 @@
 #define PROBE_VERSION PROBE_VERSION_8
 #define PROBE_VERSION_8	0x01
 #define PROBE_VERSION_10 0x03
-#define TFT_RX_BUF_SIZE 32
+#define TFT_RX_BUF_SIZE 64
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -142,8 +142,8 @@ int main(void)
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);//TFT interrupt enable
 
   //test screen exchange probe
-  //uint8_t TxBuf[26] = {0X5A, 0XA5, 0X13, 0X82, 0X20, 0X04, 0X00, 0X02, 0X00, 0X01, 0X00, 0X04, 0X00, 0X03, 0X00, 0X06, 0X00, 0X07, 0X00, 0X05, 0X00, 0X08};
-  //HAL_UART_Transmit(&huart2, TxBuf, 26, 100);
+  uint8_t TxBuf[26] = {0X5A, 0XA5, 0X13, 0X82, 0X20, 0X04, 0X00, 0X02, 0X00, 0X01, 0X00, 0X04, 0X00, 0X03, 0X00, 0X06, 0X00, 0X07, 0X00, 0X05, 0X00, 0X08};
+  HAL_UART_Transmit(&huart2, TxBuf, 26, 100);
 	//TFT_ReadProbeOrder(&huart2);
 	//HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);
 
@@ -156,8 +156,10 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+    //TFT_ReadProbeOrder(&huart2);
 		HAL_UART_Receive_DMA(&huart1, RadarRxBuf, 16);
 		HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);
+		TFT_ReadProbeOrder(&huart2);
 		if(RadarRxComplete == 1)//雷达接收完成，进行解析
 		{
 			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);//灯闪烁 提示接收到雷达数据
@@ -235,9 +237,9 @@ int main(void)
 
       if(TFTRxBuf[i + 2] == 0x18)//读探头顺序
       {
-        for(i = 1; i <= MAX_PROBE_NUM; i++)
+        for(i = 0; i < MAX_PROBE_NUM; i++)
         {
-          RadarProbeOrder[i] = TFTRxBuf[6 + 2 * i];//5A A5 18 83 2004 0A +十个字长数据
+          RadarProbeOrder[i] = TFTRxBuf[8 + 2 * i];//5A A5 18 83 2004 0A +十个字长数据
         }
       }
       if(TFTRxBuf[i + 2] == 0x08)//读屏幕按钮
@@ -260,6 +262,7 @@ int main(void)
             }
             break;
           case 0x06:        //探头界面-确认按下
+            //TFT_ReadProbeOrder(&huart2);
             //调用交换探头函数
             TFT_ExchangeRadarOrder(&huart2, RadarExchangeIndex1, RadarExchangeIndex2, MAX_PROBE_NUM);
             break;
