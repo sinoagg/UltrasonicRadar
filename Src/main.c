@@ -18,7 +18,7 @@
 #define PROBE_VERSION PROBE_VERSION_8
 #define PROBE_VERSION_8	0x01
 #define PROBE_VERSION_10 0x03
-#define TFT_RX_BUF_SIZE 64
+#define TFT_RX_BUF_SIZE 16
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -125,25 +125,23 @@ int main(void)
 	}
 	WTN6_SetVolume((uint8_t)WTN6_Volume);
 
-  RadarExchangeIndex1 = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR);
-  RadarExchangeIndex2 = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR);
-  if((RadarExchangeIndex1 & 0xFF) == 0xFF)
+  for(i = 0; i < MAX_PROBE_NUM; i++)
   {
-    RadarExchangeIndex1 = 0x00;
-    FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+    RadarProbeOrder[i] = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04);
+    if((RadarProbeOrder[i] & 0xFF) == 0xFF || RadarProbeOrder[i] == 0)
+    {
+      RadarProbeOrder[i] = i + 1;
+      FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
+    }
   }
-  if((RadarExchangeIndex2 & 0xFF) == 0xFF)
-  {
-    RadarExchangeIndex2 = 0x00;
-    FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
-  }
-	
+  
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);//radar interrupt enable
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);//TFT interrupt enable
 
-  //test screen exchange probe
-  uint8_t TxBuf[26] = {0X5A, 0XA5, 0X13, 0X82, 0X20, 0X04, 0X00, 0X02, 0X00, 0X01, 0X00, 0X04, 0X00, 0X03, 0X00, 0X06, 0X00, 0X07, 0X00, 0X05, 0X00, 0X08};
-  HAL_UART_Transmit(&huart2, TxBuf, 26, 100);
+  //set RadarProbeOrder
+  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
+  //uint8_t TxBuf[26] = {0X5A, 0XA5, 0X13, 0X82, 0X20, 0X04, 0X00, 0X02, 0X00, 0X01, 0X00, 0X04, 0X00, 0X03, 0X00, 0X06, 0X00, 0X07, 0X00, 0X05, 0X00, 0X08};
+  //HAL_UART_Transmit(&huart2, TxBuf, 26, 100);
 	//TFT_ReadProbeOrder(&huart2);
 	//HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);
 
@@ -156,12 +154,11 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-    //TFT_ReadProbeOrder(&huart2);
 		HAL_UART_Receive_DMA(&huart1, RadarRxBuf, 16);
 		HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);
-		TFT_ReadProbeOrder(&huart2);
 		if(RadarRxComplete == 1)//雷达接收完成，进行解析
 		{
+			RadarRxComplete=0;
 			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);//灯闪烁 提示接收到雷达数据
 			uint8_t sum = 0;
       Radar_checksum = RadarRxBuf[14];//校验和赋值
@@ -222,61 +219,73 @@ int main(void)
 
 		if(TFTRxComplete == 1)//屏幕信息接收完成，进行解析
 		{
+			TFTRxComplete=0;
       i = 0;
       while(1)
       {
-        if(TFTRxBuf[i] == 0x5A && TFTRxBuf[i + 1] == 0XA5)//查找帧头
+        if(TFTRxBuf[i] == 0x5A && TFTRxBuf[i + 1] == 0xA5)//查找帧头
         {
-          if(TFTRxBuf[i + 2] == 0x03) i += 5;//检测过滤ack指令
-          else break;
+          switch(TFTRxBuf[i + 2])
+          {
+            case 0x03:      //检测过滤ack指令
+              i += 5;
+              break;
+            case 0x18:      //读探头顺序
+              for(i = 0; i < MAX_PROBE_NUM; i++)
+              {
+                RadarProbeOrder[i] = TFTRxBuf[8 + 2 * i];//5A A5 18 83 2004 0A +十个字长数据
+              }
+              i += 20;
+              break;
+            case 0x08:      //有按钮按下
+              switch(TFTRxBuf[i + 5])//解析屏幕按钮按下指令
+              {
+                case 0x04:        //探头界面-探头按下
+                  //写flash存要交换的两个探头序号
+                  if(!Radar_Exchange_flag)
+                  {
+                    Radar_Exchange_flag = 1;
+                    RadarExchangeIndex1 = TFTRxBuf[i + 10];
+                    //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+                  }
+                  else
+                  {
+                    Radar_Exchange_flag = 0;
+                    RadarExchangeIndex2 = TFTRxBuf[i + 10];
+                    //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
+                  }
+                  break;
+                case 0x06:        //探头界面-确认按下
+									if(!RadarExchangeIndex1 && !RadarExchangeIndex2)
+                  {
+                    RadarProbeOrder[RadarExchangeIndex1 - 1] = RadarExchangeIndex2;//交换探头顺序序号
+                    RadarProbeOrder[RadarExchangeIndex2 - 1] = RadarExchangeIndex1;
+                    for(i = 0; i < MAX_PROBE_NUM; i++)
+                    {
+                      FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
+                    }
+                    //调用设置探头函数
+                    TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
+                  }
+                  break;
+                case 0x00:        //音量界面-确认按下
+                  WTN6_SetVolume(TFTRxBuf[10]);
+                  FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
+                  break;
+                case 0x02:        //距离界面-确认按下
+                  RadarLimitDist=TFTRxBuf[10];
+                  FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
+                  break;
+                default:
+                  break;
+              }
+              i += 10;
+              break;
+            default: break;
+          }
         }
         i++;
         if(i == TFT_RX_BUF_SIZE || TFTRxBuf[i] == 0) break;
-      }
-      if(i == TFT_RX_BUF_SIZE || TFTRxBuf[i] == 0) continue;
-
-      if(TFTRxBuf[i + 2] == 0x18)//读探头顺序
-      {
-        for(i = 0; i < MAX_PROBE_NUM; i++)
-        {
-          RadarProbeOrder[i] = TFTRxBuf[8 + 2 * i];//5A A5 18 83 2004 0A +十个字长数据
-        }
-      }
-      if(TFTRxBuf[i + 2] == 0x08)//读屏幕按钮
-      {
-        switch(TFTRxBuf[i + 5])//解析屏幕按钮按下指令
-        {
-          case 0x04:        //探头界面-探头按下
-            //写flash存要交换的两个探头序号
-            if(!Radar_Exchange_flag)
-            {
-              Radar_Exchange_flag = 1;
-              RadarExchangeIndex1 = TFTRxBuf[i + 10];
-              FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
-            }
-            else
-            {
-              Radar_Exchange_flag = 0;
-              RadarExchangeIndex2 = TFTRxBuf[i + 10];
-              FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
-            }
-            break;
-          case 0x06:        //探头界面-确认按下
-            //TFT_ReadProbeOrder(&huart2);
-            //调用交换探头函数
-            TFT_ExchangeRadarOrder(&huart2, RadarExchangeIndex1, RadarExchangeIndex2, MAX_PROBE_NUM);
-            break;
-          case 0x00:        //音量界面-确认按下
-            WTN6_SetVolume(TFTRxBuf[10]);
-            FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
-            break;
-          case 0x02:        //距离界面-确认按下
-            RadarLimitDist=TFTRxBuf[10];
-            FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
-            break;
-          default:
-            break;
-        }
       }
 		}
 			
@@ -447,7 +456,7 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
   /* DMA1_Channel6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 1);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 }

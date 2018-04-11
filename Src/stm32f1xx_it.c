@@ -260,7 +260,9 @@ void USART1_IRQHandler(void)
   //HAL_UART_IRQHandler(&huart1);
 	uint32_t tmp_flag = 0;
   uint32_t temp = 0;
-	tmp_flag =  __HAL_UART_GET_FLAG(&huart1,UART_FLAG_IDLE); 
+	 
+	
+	tmp_flag =  __HAL_UART_GET_FLAG(&huart1,UART_FLAG_IDLE);
 	if((tmp_flag != RESET))
 	{ 
 					__HAL_UART_CLEAR_IDLEFLAG(&huart1);
@@ -271,6 +273,7 @@ void USART1_IRQHandler(void)
 					//rx_len =  BUFFER_SIZE - temp;                            
 					RadarRxComplete=1;
 	 }
+	
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
@@ -281,13 +284,7 @@ void USART1_IRQHandler(void)
 */
 void USART2_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART2_IRQn 0 */
-
-  /* USER CODE END USART2_IRQn 0 */
-  /* USER CODE BEGIN USART1_IRQn 0 */
-
-  /* USER CODE END USART1_IRQn 0 */
-  //HAL_UART_IRQHandler(&huart1);
+  
 	uint32_t tmp_flag = 0;
   uint32_t temp = 0;
 	tmp_flag =  __HAL_UART_GET_FLAG(&huart2,UART_FLAG_IDLE); 
