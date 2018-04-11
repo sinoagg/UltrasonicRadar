@@ -74,6 +74,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	uint8_t i;
+	uint8_t temp;
 	uint32_t RadarLimitDist=0x96;					//默认是1.5米
 	uint32_t WTN6_Volume=0x03;						//默认最大音量
   uint32_t RadarExchangeIndex1=0x00;    //雷达探头交换序号1
@@ -236,25 +237,29 @@ int main(void)
             switch(TFTRxBuf[5])//解析屏幕按钮按下指令
             {
               case 0x04:        //探头界面-探头按下
-                //写flash存要交换的两个探头序号
-                if(!Radar_Exchange_flag)
-                {
-                  Radar_Exchange_flag = 1;
-                  RadarExchangeIndex1 = TFTRxBuf[10];
-                  //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
-                }
-                else
-                {
-                  Radar_Exchange_flag = 0;
-                  RadarExchangeIndex2 = TFTRxBuf[10];
-                  //FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
-                }
+								if(RadarExchangeIndex1 != TFTRxBuf[10])
+								{
+									//存要交换的两个探头序号
+									if(!Radar_Exchange_flag)
+									{
+										Radar_Exchange_flag = 1;
+										RadarExchangeIndex1 = TFTRxBuf[10];
+										//FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+									}
+									else
+									{
+										Radar_Exchange_flag = 0;
+										RadarExchangeIndex2 = TFTRxBuf[10];
+										//FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
+									}
+								}
                 break;
               case 0x06:        //探头界面-确认按下
 								if(RadarExchangeIndex1 && RadarExchangeIndex2)
                 {
-                  RadarProbeOrder[RadarExchangeIndex1 - 1] = RadarExchangeIndex2;//交换探头顺序序号
-                  RadarProbeOrder[RadarExchangeIndex2 - 1] = RadarExchangeIndex1;
+									temp = RadarProbeOrder[RadarExchangeIndex1 - 1];//交换探头顺序序号
+									RadarProbeOrder[RadarExchangeIndex1 - 1] = RadarProbeOrder[RadarExchangeIndex2 - 1];
+                  RadarProbeOrder[RadarExchangeIndex2 - 1] = temp;
                   for(i = 0; i < MAX_PROBE_NUM; i++)
                   {
                     FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
