@@ -291,6 +291,7 @@ void USART2_IRQHandler(void)
 	if((tmp_flag != RESET))
 	{ 
 					__HAL_UART_CLEAR_IDLEFLAG(&huart2);
+					
 					temp = huart2.Instance->SR;  
 					temp = huart2.Instance->DR; 
 					HAL_UART_DMAStop(&huart2);
