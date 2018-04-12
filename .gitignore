@@ -5,3 +5,8 @@
 *Link*
 *.txt
 /MDK-ARM/
+dwintft_radar.crf
+*.map
+JLinkLog.txt
+Radar_V1.00.uvguix.Thinkpad
+Radar_V1.00.uvoptx
