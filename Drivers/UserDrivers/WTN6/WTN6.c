@@ -4,8 +4,8 @@
 
 uint8_t WTN6_Broadcast(uint8_t addr)
 {
-	//if(GPIO_PIN_SET==HAL_GPIO_ReadPin(BELL_BUSY_GPIO_Port, BELL_DATA_Pin))
-	//{
+	if(GPIO_PIN_SET==HAL_GPIO_ReadPin(BELL_BUSY_GPIO_Port, BELL_DATA_Pin))
+	{
 		uint8_t bit_data;
 		uint8_t j;
 		HAL_GPIO_WritePin(BELL_DATA_GPIO_Port, BELL_DATA_Pin, GPIO_PIN_RESET);
@@ -31,9 +31,9 @@ uint8_t WTN6_Broadcast(uint8_t addr)
 		}
 		HAL_GPIO_WritePin(BELL_DATA_GPIO_Port, BELL_DATA_Pin, GPIO_PIN_SET);
 		return 0;
-	//}
-	//else 
-		//return 1;
+	}
+	else 
+		return 1;
 }
 
 void WTN6_Repeat(void)
