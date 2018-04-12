@@ -1,6 +1,7 @@
 #project creating files
-*.o
+*.[oa]
 *.d
 *.crf
 *Link*
 *.txt
+/MDK-ARM/
