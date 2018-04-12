@@ -43,5 +43,5 @@ void WTN6_Repeat(void)
 	
 void WTN6_SetVolume(uint8_t volume)
 {
-	WTN6_Broadcast(0xE1+volume*4-1);//E0声音最小，EF声音最大
+	WTN6_Broadcast(0xE1+volume*5-1);//E0声音最小，EF声音最大
 }

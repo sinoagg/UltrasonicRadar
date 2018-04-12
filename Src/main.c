@@ -113,6 +113,9 @@ int main(void)
 	delay_init(72);
 	TFT_SetProbeVersion(&huart2, PROBE_VERSION);
 	
+	//WTN6_SetVolume(WIN6_Volume);
+	//WTN6_Broadcast(0xEE);
+	
 	RadarLimitDist=FlashRead32bit(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR);
 	if((RadarLimitDist&0xFF)==0xFF)		//如果此地址为空
 	{
@@ -120,12 +123,15 @@ int main(void)
 		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
 	}
 	WTN6_Volume=FlashRead32bit(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR);
+	
 	if((WTN6_Volume&0xFF)==0xFF)
 	{
 		WTN6_Volume=0x03;
 		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
 	}
 	WTN6_SetVolume((uint8_t)WTN6_Volume);
+	
+	WTN6_Broadcast(0x16);
 
   for(i = 0; i < MAX_PROBE_NUM; i++)
   {
