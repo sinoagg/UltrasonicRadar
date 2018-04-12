@@ -77,8 +77,9 @@ int main(void)
 	uint8_t temp;
 	uint32_t RadarLimitDist=0x96;					//默认是1.5米
 	uint32_t WTN6_Volume=0x03;						//默认最大音量
-  uint32_t RadarExchangeIndex1=0x00;    //雷达探头交换序号1
-  uint32_t RadarExchangeIndex2=0x00;    //雷达探头交换序号2
+  uint32_t RadarExchangeLoc1=0x00;      //雷达探头交换位置1
+  uint32_t RadarExchangeLoc2=0x00;      //雷达探头交换位置2
+  uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
 	uint8_t AlarmOn=0;
   uint8_t Radar_Exchange_flag = 0;
 
@@ -176,24 +177,41 @@ int main(void)
             //给探头数据赋值
             //顺序为5#7#8#6#1#2#4#****3#
             //      1 2 3 4 5 6 7     12
-//            Radar_8Probe[RadarProbeOrder[5 - 1] - 1] = RadarRxBuf[1];//给探头数组赋值雷达数据，数组编号为逻辑编号-1
-//            Radar_8Probe[RadarProbeOrder[7 - 1] - 1] = RadarRxBuf[2];
-//            Radar_8Probe[RadarProbeOrder[8 - 1] - 1] = RadarRxBuf[3];
-//            Radar_8Probe[RadarProbeOrder[6 - 1] - 1] = RadarRxBuf[4];
-//            Radar_8Probe[RadarProbeOrder[1 - 1] - 1] = RadarRxBuf[5];
-//            Radar_8Probe[RadarProbeOrder[2 - 1] - 1] = RadarRxBuf[6];
-//            Radar_8Probe[RadarProbeOrder[4 - 1] - 1] = RadarRxBuf[7];
-//            Radar_8Probe[RadarProbeOrder[3 - 1] - 1] = RadarRxBuf[12];
-						Radar_8Probe[5 - 1] = RadarRxBuf[1];//给探头数组赋值雷达数据，数组编号为逻辑编号-1
-            Radar_8Probe[7 - 1] = RadarRxBuf[2];
-            Radar_8Probe[RadarProbeOrder[8 - 1] - 1] = RadarRxBuf[3];
-            Radar_8Probe[RadarProbeOrder[6 - 1] - 1] = RadarRxBuf[4];
-            Radar_8Probe[RadarProbeOrder[1 - 1] - 1] = RadarRxBuf[5];
-            Radar_8Probe[RadarProbeOrder[2 - 1] - 1] = RadarRxBuf[6];
-            Radar_8Probe[RadarProbeOrder[4 - 1] - 1] = RadarRxBuf[7];
-            Radar_8Probe[RadarProbeOrder[3 - 1] - 1] = RadarRxBuf[12];
-            //显示屏显示0#探头数据
-            TFT_DispRadarDist(&huart2, Radar_8Probe, 0);
+						for(i = 0; i < MAX_PROBE_NUM; i++)
+            {
+              switch(RadarProbeOrder[i])//根据探头顺序数组找某位置的探头序号
+              {
+                case 5://5号探头
+                  Radar_8Probe[i] = RadarRxBuf[1];//5号探头在i位置，获取它的距离值
+                  break;
+                case 7:
+                  Radar_8Probe[i] = RadarRxBuf[2];
+                  break;
+                case 8:
+                  Radar_8Probe[i] = RadarRxBuf[3];
+                  break;
+                case 6:
+                  Radar_8Probe[i] = RadarRxBuf[4];
+                  break;
+                case 1:
+                  Radar_8Probe[i] = RadarRxBuf[5];
+                  break;
+                case 2:
+                  Radar_8Probe[i] = RadarRxBuf[6];
+                  break;
+                case 4:
+                  Radar_8Probe[i] = RadarRxBuf[7];
+                  break;
+                case 3:
+                  Radar_8Probe[i] = RadarRxBuf[12];
+                  break;
+                default: break;
+              }//switch探头序号
+              if(RadarMinDist >= Radar_8Probe[i])
+                RadarMinDist = Radar_8Probe[i];//寻找探头最小距离
+            }
+            //显示屏显示最小距离探头数据
+            TFT_DispRadarDist(&huart2, Radar_8Probe, RadarMinDist);
 						//显示屏显示颜色（波形）表示探头距离
 						TFT_DispRadarColor(&huart2, Radar_8Probe, MAX_PROBE_NUM);
 					}
@@ -202,16 +220,47 @@ int main(void)
             //给探头数据赋值
             //顺序为8#9#10#*1#2#3#4#5#6#7#*
             //      1 2 3   5 6 7 8 9 10 11
-            for(i = 1; i < 4; i++)//赋值后三个探头，编号为8.9.10
+            for(i = 0; i < MAX_PROBE_NUM; i++)
             {
-              Radar_10Probe[RadarProbeOrder[i - 1] + 6] = RadarRxBuf[i];
-            }
-            for(i = 1; i < 8; i++)//赋值前3和两侧各两个探头，编号为1~7
-            {
-              Radar_10Probe[RadarProbeOrder[i - 1] - 1] = RadarRxBuf[i + 4];
+              switch(RadarProbeOrder[i])//根据探头顺序数组找某位置的探头序号
+              {
+                case 1://1号探头
+                  Radar_10Probe[i] = RadarRxBuf[5];//1号探头在i位置，获取它的距离值
+                  break;
+                case 2:
+                  Radar_10Probe[i] = RadarRxBuf[6];
+                  break;
+                case 3:
+                  Radar_10Probe[i] = RadarRxBuf[7];
+                  break;
+                case 4:
+                  Radar_10Probe[i] = RadarRxBuf[8];
+                  break;
+                case 5:
+                  Radar_10Probe[i] = RadarRxBuf[9];
+                  break;
+                case 6:
+                  Radar_10Probe[i] = RadarRxBuf[10];
+                  break;
+                case 7:
+                  Radar_10Probe[i] = RadarRxBuf[11];
+                  break;
+                case 8:
+                  Radar_10Probe[i] = RadarRxBuf[1];
+                  break;
+                case 9:
+                  Radar_10Probe[i] = RadarRxBuf[2];
+                  break;
+                case 0x0A:
+                  Radar_10Probe[i] = RadarRxBuf[3];
+                  break;
+                default: break;
+              }//switch探头序号
+              if(RadarMinDist >= Radar_10Probe[i])
+                RadarMinDist = Radar_10Probe[i];//寻找探头最小距离
             }
             //显示屏显示0#探头数据
-            TFT_DispRadarDist(&huart2, Radar_10Probe, 0);
+            TFT_DispRadarDist(&huart2, Radar_10Probe, RadarMinDist);
 						//显示屏显示颜色（波形）表示探头距离
 						TFT_DispRadarColor(&huart2, Radar_10Probe, MAX_PROBE_NUM);
 					}
@@ -245,30 +294,28 @@ int main(void)
             switch(TFTRxBuf[5])//解析屏幕按钮按下指令
             {
               case 0x04:        //探头界面-探头按下
-								if(RadarExchangeIndex1 != TFTRxBuf[10])
+								if(RadarExchangeLoc1 != TFTRxBuf[10])
 								{
-									//存要交换的两个探头序号
+									//存要交换的两个探头位置号（从0开始）
 									if(!Radar_Exchange_flag)
 									{
 										Radar_Exchange_flag = 1;
-										RadarExchangeIndex1 = TFTRxBuf[10];
-										//FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE1_OFFSET_ADDR, RadarExchangeIndex1);
+										RadarExchangeLoc1 = TFTRxBuf[10] - 1;
 									}
 									else
 									{
 										Radar_Exchange_flag = 0;
-										RadarExchangeIndex2 = TFTRxBuf[10];
-										//FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_EXCHANGE2_OFFSET_ADDR, RadarExchangeIndex2);
+										RadarExchangeLoc2 = TFTRxBuf[10] - 1;
 									}
 								}
                 break;
               case 0x06:        //探头界面-确认按下
-								if(RadarExchangeIndex1 && RadarExchangeIndex2)
+								if(RadarExchangeLoc1 || RadarExchangeLoc2)
                 {
-									temp = RadarProbeOrder[RadarExchangeIndex1 - 1];//交换探头顺序序号
-									RadarProbeOrder[RadarExchangeIndex1 - 1] = RadarProbeOrder[RadarExchangeIndex2 - 1];
-                  RadarProbeOrder[RadarExchangeIndex2 - 1] = temp;
-                  for(i = 0; i < MAX_PROBE_NUM; i++)
+									temp = RadarProbeOrder[RadarExchangeLoc1];//交换探头顺序号
+									RadarProbeOrder[RadarExchangeLoc1] = RadarProbeOrder[RadarExchangeLoc2];
+                  RadarProbeOrder[RadarExchangeLoc2] = temp;
+                  for(i = 0; i < MAX_PROBE_NUM; i++)    //写falsh存探头序号数组
                   {
                     FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
                   }
