@@ -9,7 +9,7 @@ void TFT_DispRadarDist(UART_HandleTypeDef *huart, uint8_t *pRadarDist, uint8_t n
 {
 	uint8_t TxBuf[8]={0x5A,0xA5,0x05,0x82,0x12,0x11};//command header,1211 means dinstination
 	TxBuf[6] = 0x00;
-	if(*(pRadarDist + n) <= 0x96)//雷达探头距离数据范围
+	if(*(pRadarDist + n) <= RadarLimitDist)//雷达探头距离数据范围
 		TxBuf[7] = *(pRadarDist + n);//发送数组的7#为要显示距离的探头的数据
 	HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 }
@@ -30,19 +30,19 @@ void TFT_DispRadarColor(UART_HandleTypeDef *huart, uint8_t *pRadarColor, uint8_t
 		{
 			TxBuf[5] = 2 * i;//探头地址
 			TxBuf[6] = 0x00;
-			if(*(pRadarColor + i) <= 0x96)//雷达探头距离数据范围
+			if(*(pRadarColor + i) <= RadarLimitDist)//雷达探头距离数据范围
 			{
-				if(*(pRadarColor + i) >= 0x64)//1m~1.5m之间是绿色
+				if(*(pRadarColor + i) <= RadarLimitDist * 1/3)//最大距离的1/3以内是红色
 				{
-					TxBuf[7] = 0x02;//写颜色，0001黄色，0002绿色，0004闪烁，0000红色
+					TxBuf[7] = TFT_RED;
 				}
-				else if(*(pRadarColor + i) >= 0x32)//0.5m~1m之间是黄色
+				else if(*(pRadarColor + i) <= RadarLimitDist * 2/3)//最大距离的1/3~2/3是黄色
 				{
-					TxBuf[7] = 0x01;
+					TxBuf[7] = TFT_YELLOW;
 				}
-				else
+				else	//剩余情况（最大距离的2/3以上）是绿色
 				{
-					TxBuf[7] = 0x00;//0.5m以内是红色
+					TxBuf[7] = TFT_GREEN;
 				}
 				HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 			}
@@ -54,19 +54,19 @@ void TFT_DispRadarColor(UART_HandleTypeDef *huart, uint8_t *pRadarColor, uint8_t
 		{
 			TxBuf[5] = 2 * i + 0x10;//探头地址
 			TxBuf[6] = 0x00;
-			if(*(pRadarColor + i) <= 0x96)//雷达探头距离数据范围
+			if(*(pRadarColor + i) <= RadarLimitDist)//雷达探头距离数据范围
 			{
-				if(*(pRadarColor + i) >= 0x64)//1m~1.5m之间是绿色
+				if(*(pRadarColor + i) <= RadarLimitDist * 1/3)//最大距离的1/3以内是红色
 				{
-					TxBuf[7] = 0x02;//写颜色，0001黄色，0002绿色，0004闪烁，0000红色
+					TxBuf[7] = TFT_RED;
 				}
-				else if(*(pRadarColor + i) >= 0x32)//0.5m~1m之间是黄色
+				else if(*(pRadarColor + i) <= RadarLimitDist * 2/3)//最大距离的1/3~2/3是黄色
 				{
-					TxBuf[7] = 0x01;
+					TxBuf[7] = TFT_YELLOW;
 				}
-				else
+				else	//剩余情况（最大距离的2/3以上）是绿色
 				{
-					TxBuf[7] = 0x00;//0.5m以内是红色
+					TxBuf[7] = TFT_GREEN;
 				}
 				HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 			}

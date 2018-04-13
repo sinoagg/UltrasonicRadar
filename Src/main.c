@@ -19,7 +19,7 @@
 #define PROBE_VERSION_8	0x01
 #define PROBE_VERSION_10 0x03
 #define TFT_RX_BUF_SIZE 32
-#define BELL_USE 1
+//#define BELL_USE 0
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -40,6 +40,7 @@ uint8_t RadarRxBuf[32];						//雷达接收缓存
 uint8_t TFTRxBuf[TFT_RX_BUF_SIZE];//触摸屏接收缓存
 uint8_t CANTxBuf[8]={0x00,0x7D,0x7D,0xAF,0x64,0x64,0x64,0xFF};
 uint8_t RadarProbeOrder[10] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A};
+uint32_t RadarLimitDist=0x96;					//默认是1.5米
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,8 +54,6 @@ static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-uint8_t Radar_8Probe[MAX_PROBE_NUM] = {0};
-uint8_t Radar_10Probe[MAX_PROBE_NUM] = {0};
 uint8_t Radar_checksum = 0;
 
 struct 
@@ -76,13 +75,22 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	uint8_t i;
 	uint8_t temp;
-	uint32_t RadarLimitDist=0x96;					//默认是1.5米
 	uint32_t WTN6_Volume=0x01;						//默认最大音量
   uint32_t RadarExchangeLoc1=0x00;      //雷达探头交换位置1
   uint32_t RadarExchangeLoc2=0x00;      //雷达探头交换位置2
   uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
 	uint8_t AlarmOn=0;
   uint8_t Radar_Exchange_flag = 0;
+	uint8_t Radar_8Probe[MAX_PROBE_NUM] = {0};
+	uint8_t Radar_10Probe[MAX_PROBE_NUM] = {0};
+	for(i = 0; i < MAX_PROBE_NUM; i++)
+	{
+		Radar_8Probe[i] = RadarLimitDist;
+	}
+	for(i = 0; i < MAX_PROBE_NUM; i++)
+	{
+		Radar_10Probe[i] = RadarLimitDist;
+	}
 
   /* USER CODE END 1 */
 
@@ -219,13 +227,13 @@ int main(void)
                 RadarMinDist = Radar_8Probe[i];//寻找探头最小距离
             }
             //根据最小距离用喇叭警示
-            if(RadarMinDist <= 0x96 && RadarMinDist > 0x64)//距离在1m~1.5m
+            if(RadarMinDist <= RadarLimitDist && RadarMinDist > (RadarLimitDist * 2/3))//距离在1m~1.5m
 						{
 							#ifdef BELL_USE
               WTN6_Broadcast(BELL_BB_1000MS);
 							#endif
 						}
-            else if(RadarMinDist <= 0x64 && RadarMinDist > 0x32)//距离在0.5m~1m
+            else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))//距离在0.5m~1m
 						{
 							#ifdef BELL_USE
               WTN6_Broadcast(BELL_BIRD_1000MS);
@@ -287,13 +295,13 @@ int main(void)
                 RadarMinDist = Radar_10Probe[i];//寻找探头最小距离
             }
             //根据最小距离用喇叭警示
-            if(RadarMinDist <= 0x96 && RadarMinDist > 0x64)
+            if(RadarMinDist <= RadarLimitDist && RadarMinDist > (RadarLimitDist * 2/3))
 						{
 							#ifdef BELL_USE
               WTN6_Broadcast(BELL_BB_1000MS);
 							#endif
 						}
-            else if(RadarMinDist <= 0x64 && RadarMinDist > 0x32)
+            else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))
 						{
 							#ifdef BELL_USE
               WTN6_Broadcast(BELL_BIRD_500MS);
@@ -375,7 +383,8 @@ int main(void)
                 FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
                 break;
               case 0x02:        //距离界面-确认按下
-                RadarLimitDist = TFTRxBuf[10];
+								//收到0x05表示0.5m，0x0F表示1.5m
+                RadarLimitDist = TFTRxBuf[10] * 10;
                 FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
                 break;
               default:
