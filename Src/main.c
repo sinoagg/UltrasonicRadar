@@ -51,6 +51,7 @@
 #define PROBE_VERSION_8	0x01
 #define PROBE_VERSION_10 0x03
 #define TFT_RX_BUF_SIZE 32
+#define CAN_FIFO_NUM_SEL 0
 //#define BELL_USE 0
 /* USER CODE END Includes */
 
@@ -69,10 +70,15 @@ DMA_HandleTypeDef hdma_usart2_rx;
 uint8_t RadarRxComplete=0;				//雷达串口收到数据标志位
 uint8_t TFTRxComplete=0;					//触摸屏收到数据标志位
 uint8_t BellFlag = TFT_GREEN;
+uint8_t speed_flag = 0;           //收到速度数据信息
+uint8_t CANRxFlag = 0;
+uint8_t CANSpeedEnable;
 uint8_t RadarRxBuf[32];						//雷达接收缓存
 uint8_t TFTRxBuf[TFT_RX_BUF_SIZE];//触摸屏接收缓存
+uint8_t vehicle_speed = 0;
 uint8_t CANTxBuf[8]={0x00,0x7D,0x7D,0xAF,0x64,0x64,0x64,0xFF};
 uint8_t RadarProbeOrder[10] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A};
+uint8_t Radar_checksum = 0;
 uint32_t RadarLimitDist=0x96;					//默认是1.5米
 /* USER CODE END PV */
 
@@ -87,7 +93,8 @@ static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-uint8_t Radar_checksum = 0;
+static void CAN1_Filter_Speed_Init(void);
+static void CAN_RxTx_Init(void);
 
 struct 
 {
@@ -152,6 +159,8 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
+  CAN1_Filter_Speed_Init();
+  CAN_RxTx_Init();
 	delay_init(72);
 	TFT_SetProbeVersion(&huart2, PROBE_VERSION);
 	
@@ -204,8 +213,11 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		HAL_UART_Receive_DMA(&huart1, RadarRxBuf, 32);
-		HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);
+    HAL_CAN_Receive_IT(&hcan, CAN_FIFO0);         //接收CAN线车速信息
+		HAL_UART_Receive_DMA(&huart1, RadarRxBuf, 32);//接收雷达距离信息
+		HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);//接收屏幕回传指令
+    if(CANSpeedEnable)
+      ;//传递速度信号
     //WTN6_Broadcast(BELL_BIRD_300MS);
 		if(RadarRxComplete == 1)//雷达接收完成，进行解析
 		{
@@ -321,7 +333,7 @@ int main(void)
               if(RadarMinDist >= Radar_10Probe[i])
                 RadarMinDist = Radar_10Probe[i];//寻找探头最小距离
             }
-            //根据最小距离用喇叭警示
+            //根据最小距离设置喇叭警示标志
             if(RadarMinDist < (RadarLimitDist * 1/3))
 						{
               BellFlag = TFT_RED;
@@ -346,7 +358,8 @@ int main(void)
         Radar_State.vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
         Radar_State.vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
 				//显示屏显示车速
-				TFT_DispVechileSpeed(&huart2, Radar_State.vehicle_speed);//send speed read from can
+        if(speed_flag==1)
+				  TFT_DispVehicleSpeed(&huart2, vehicle_speed);//send speed read from can
 			}
 		}
 
@@ -416,6 +429,13 @@ int main(void)
         }
       }
 		}
+
+    if(speed_flag==1)                         //如果收到速度数据
+    { 
+      speed_flag=0;
+      //UART_BusInfo_BUF[7]=vehicle_speed;    //赋值车辆速度
+      __HAL_CAN_ENABLE_IT(&hcan,CAN_IT_FMP0); //重新开启FIF00消息挂号中断
+    }
 			
 		if(AlarmOn==1)
 		{
@@ -655,23 +675,95 @@ static void MX_GPIO_Init(void)
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  switch(BellFlag)
+  if(htim->Instance == htim2.Instance)
   {
-    case TFT_GREEN:
-      #ifdef BELL_USE
-      WTN6_Broadcast(BELL_BB_1000MS);
-      #endif
-      break;
-    case TFT_YELLOW:
-      #ifdef BELL_USE
-      WTN6_Broadcast(BELL_BIRD_500MS);
-      #endif
-    case TFT_RED:
-      #ifdef BELL_USE
-      WTN6_Broadcast(BELL_BB_200MS);
-      #endif
-    default: break;
+    switch(BellFlag)
+    {
+      case TFT_GREEN:
+        #ifdef BELL_USE
+        WTN6_Broadcast(BELL_BB_1000MS);
+        #endif
+        break;
+      case TFT_YELLOW:
+        #ifdef BELL_USE
+        WTN6_Broadcast(BELL_BIRD_500MS);
+        #endif
+      case TFT_RED:
+        #ifdef BELL_USE
+        WTN6_Broadcast(BELL_BB_200MS);
+        #endif
+      default: break;
+    }
   }
+}
+
+/*CAN Rx/Tx Init */
+static void CAN_RxTx_Init(void)
+{
+  static CanTxMsgTypeDef        CanTxMessage;
+  static CanRxMsgTypeDef        CanRxMessage;
+  
+  hcan.Instance = CAN1;
+  hcan.pRxMsg = &CanRxMessage;
+  hcan.pTxMsg = &CanTxMessage;
+  
+  hcan.pTxMsg->DLC = 8;
+  hcan.pTxMsg->IDE = CAN_ID_EXT;
+  hcan.pTxMsg->RTR = CAN_RTR_DATA;
+}
+
+/* CAN filter BYD Speed init function */
+static void CAN1_Filter_Speed_Init(void)
+{
+  CAN_FilterConfTypeDef  CAN1_FilterConf;
+  CAN1_FilterConf.FilterNumber = 0;
+  #ifdef BYD_MODEL
+  CAN1_FilterConf.FilterIdHigh=0X07F7;     //32位ID  ID:FEF1     车速
+  CAN1_FilterConf.FilterIdLow=0X8800;
+  #endif
+  
+  #ifdef KINGLONG_MODEL
+  CAN1_FilterConf.FilterIdHigh=0X07F3;     //32位ID  ID:FE6C     车速
+  CAN1_FilterConf.FilterIdLow=0X6800;
+  #endif
+  
+  CAN1_FilterConf.FilterMaskIdHigh=0x07FF; //32位MASK
+  CAN1_FilterConf.FilterMaskIdLow=0XF800; 
+  CAN1_FilterConf.BankNumber=1;
+
+  CAN1_FilterConf.FilterFIFOAssignment=CAN_FILTER_FIFO0;//过滤器0关联到FIFO0
+  CAN1_FilterConf.FilterNumber=CAN_FIFO_NUM_SEL;          //过滤器0
+  CAN1_FilterConf.FilterMode=CAN_FILTERMODE_IDMASK;
+  CAN1_FilterConf.FilterScale=CAN_FILTERSCALE_32BIT;
+  CAN1_FilterConf.FilterActivation=ENABLE; //激活滤波器0
+  
+  if(HAL_CAN_ConfigFilter(&hcan,&CAN1_FilterConf)!=HAL_OK) 
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+  __HAL_CAN_ENABLE_IT(&hcan,CAN_IT_FMP0);//重新开启FIF00消息挂号中断
+}
+
+/* CAN RxCpltCallback function */
+void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
+{ 
+    #ifdef BYD_MODEL
+    if((speed_flag==0) && (hcan->pRxMsg->ExtId==0x18FEF100))
+    {
+      vehicle_speed = hcan->pRxMsg->Data[2];
+      speed_flag=1;           //speed数据齐全
+      CAN_speed_enable=1;
+    }
+    #endif
+    
+    #ifdef KINGLONG_MODEL
+    if((speed_flag==0) && (hcan->pRxMsg->ExtId==0x0CFE6CD1))
+    {
+      vehicle_speed = hcan->pRxMsg->Data[7];
+      speed_flag=1;           //speed数据齐全
+      CAN_speed_enable=1;
+    }
+    #endif
 }
 /* USER CODE END 4 */
 
