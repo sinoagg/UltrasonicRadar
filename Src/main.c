@@ -1,8 +1,40 @@
-/*
-	纯雷达显示器代码
-	Version：V1.00
-	Date：04/04/2018
-*/
+/**
+  ******************************************************************************
+  * File Name          : main.c
+  * Description        : Main program body
+  ******************************************************************************
+  ** This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
+  *
+  * COPYRIGHT(c) 2018 STMicroelectronics
+  *
+  * Redistribution and use in source and binary forms, with or without modification,
+  * are permitted provided that the following conditions are met:
+  *   1. Redistributions of source code must retain the above copyright notice,
+  *      this list of conditions and the following disclaimer.
+  *   2. Redistributions in binary form must reproduce the above copyright notice,
+  *      this list of conditions and the following disclaimer in the documentation
+  *      and/or other materials provided with the distribution.
+  *   3. Neither the name of STMicroelectronics nor the names of its contributors
+  *      may be used to endorse or promote products derived from this software
+  *      without specific prior written permission.
+  *
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  ******************************************************************************
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -36,6 +68,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private variables ---------------------------------------------------------*/
 uint8_t RadarRxComplete=0;				//雷达串口收到数据标志位
 uint8_t TFTRxComplete=0;					//触摸屏收到数据标志位
+uint8_t BellFlag = TFT_GREEN;
 uint8_t RadarRxBuf[32];						//雷达接收缓存
 uint8_t TFTRxBuf[TFT_RX_BUF_SIZE];//触摸屏接收缓存
 uint8_t CANTxBuf[8]={0x00,0x7D,0x7D,0xAF,0x64,0x64,0x64,0xFF};
@@ -227,23 +260,17 @@ int main(void)
                 RadarMinDist = Radar_8Probe[i];//寻找探头最小距离
             }
             //根据最小距离用喇叭警示
-            if(RadarMinDist <= RadarLimitDist && RadarMinDist > (RadarLimitDist * 2/3))//距离在1m~1.5m
+            if(RadarMinDist <= (RadarLimitDist * 1/3))//距离在1m~1.5m
 						{
-							#ifdef BELL_USE
-              WTN6_Broadcast(BELL_BB_1000MS);
-							#endif
+              BellFlag = TFT_RED;
 						}
             else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))//距离在0.5m~1m
 						{
-							#ifdef BELL_USE
-              WTN6_Broadcast(BELL_BIRD_1000MS);
-							#endif
+              BellFlag = TFT_YELLOW;
 						}
             else							//距离在0~0.5m
 						{
-							#ifdef BELL_USE
-              WTN6_Broadcast(BELL_BB_200MS);
-							#endif
+              BellFlag = TFT_GREEN;
 						}
             //显示屏显示最小距离探头数据
             TFT_DispRadarDist(&huart2, Radar_8Probe, RadarMinDist);
@@ -295,23 +322,17 @@ int main(void)
                 RadarMinDist = Radar_10Probe[i];//寻找探头最小距离
             }
             //根据最小距离用喇叭警示
-            if(RadarMinDist <= RadarLimitDist && RadarMinDist > (RadarLimitDist * 2/3))
+            if(RadarMinDist < (RadarLimitDist * 1/3))
 						{
-							#ifdef BELL_USE
-              WTN6_Broadcast(BELL_BB_1000MS);
-							#endif
+              BellFlag = TFT_RED;
 						}
             else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))
 						{
-							#ifdef BELL_USE
-              WTN6_Broadcast(BELL_BIRD_500MS);
-							#endif
+              BellFlag = TFT_YELLOW;
 						}
             else
 						{
-							#ifdef BELL_USE
-              WTN6_Broadcast(BELL_BB_200MS);
-							#endif
+              BellFlag = TFT_GREEN;
 						}
             //显示屏显示0#探头数据
             TFT_DispRadarDist(&huart2, Radar_10Probe, RadarMinDist);
@@ -487,9 +508,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 72-1;
+  htim2.Init.Prescaler = 72 * 500 -1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1000-1;
+  htim2.Init.Period = 1000 - 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -563,7 +584,7 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
   /* DMA1_Channel6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 1);
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
 }
@@ -627,7 +648,31 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/**
+ * [HAL_TIM_PeriodElapsedCallback is called every (1/72M * 72 * 1000) second]
+ * which is set in MX_TIM2_Init() via STM32cubeMX
+ * @param htim [htim index, eg.htim2]
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  switch(BellFlag)
+  {
+    case TFT_GREEN:
+      #ifdef BELL_USE
+      WTN6_Broadcast(BELL_BB_1000MS);
+      #endif
+      break;
+    case TFT_YELLOW:
+      #ifdef BELL_USE
+      WTN6_Broadcast(BELL_BIRD_500MS);
+      #endif
+    case TFT_RED:
+      #ifdef BELL_USE
+      WTN6_Broadcast(BELL_BB_200MS);
+      #endif
+    default: break;
+  }
+}
 /* USER CODE END 4 */
 
 /**

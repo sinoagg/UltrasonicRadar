@@ -75,6 +75,8 @@ void HardFault_Handler(void)
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
+    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+    /* USER CODE END W1_HardFault_IRQn 0 */
   }
   /* USER CODE BEGIN HardFault_IRQn 1 */
 
@@ -91,6 +93,8 @@ void MemManage_Handler(void)
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
+    /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+    /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
   /* USER CODE BEGIN MemoryManagement_IRQn 1 */
 
@@ -107,6 +111,8 @@ void BusFault_Handler(void)
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
   {
+    /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+    /* USER CODE END W1_BusFault_IRQn 0 */
   }
   /* USER CODE BEGIN BusFault_IRQn 1 */
 
@@ -123,6 +129,8 @@ void UsageFault_Handler(void)
   /* USER CODE END UsageFault_IRQn 0 */
   while (1)
   {
+    /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+    /* USER CODE END W1_UsageFault_IRQn 0 */
   }
   /* USER CODE BEGIN UsageFault_IRQn 1 */
 
@@ -252,15 +260,8 @@ void TIM2_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
-  /* USER CODE END USART1_IRQn 0 */
-  /* USER CODE BEGIN USART1_IRQn 0 */
-
-  /* USER CODE END USART1_IRQn 0 */
-  //HAL_UART_IRQHandler(&huart1);
 	uint32_t tmp_flag = 0;
   uint32_t temp = 0;
-	 
 	
 	tmp_flag =  __HAL_UART_GET_FLAG(&huart1,UART_FLAG_IDLE);
 	if((tmp_flag != RESET))
@@ -273,7 +274,8 @@ void USART1_IRQHandler(void)
 					//rx_len =  BUFFER_SIZE - temp;                            
 					RadarRxComplete=1;
 	 }
-	
+  /* USER CODE END USART1_IRQn 0 */
+  HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
@@ -284,7 +286,11 @@ void USART1_IRQHandler(void)
 */
 void USART2_IRQHandler(void)
 {
-  
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
 	uint32_t tmp_flag = 0;
   uint32_t temp = 0;
 	tmp_flag =  __HAL_UART_GET_FLAG(&huart2,UART_FLAG_IDLE); 
@@ -299,7 +305,6 @@ void USART2_IRQHandler(void)
 					//rx_len =  BUFFER_SIZE - temp;                            
 					TFTRxComplete=1;
 	 }
-  /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */
 }
