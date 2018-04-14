@@ -76,7 +76,7 @@ uint8_t CANRxFlag = 0;
 uint8_t CANSpeedEnable;
 uint8_t RadarRxBuf[32];						//雷达接收缓存
 uint8_t TFTRxBuf[TFT_RX_BUF_SIZE];//触摸屏接收缓存
-uint16_t vehicle_speed = 0;
+uint8_t vehicle_speed = 0;
 uint8_t CANTxBuf[8]={0x00,0x7D,0x7D,0xAF,0x64,0x64,0x64,0xFF};
 uint8_t RadarProbeOrder[10] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A};
 uint8_t Radar_checksum = 0;
@@ -435,6 +435,7 @@ int main(void)
       TFT_DispVehicleSpeed(&huart2, vehicle_speed);//send speed read from can
       __HAL_CAN_ENABLE_IT(&hcan,CAN_IT_FMP0); //重新开启FIF00消息挂号中断
     }
+		//TFT_DispVehicleSpeed(&huart2, 0x0A01);
 
 		if(AlarmOn==1)
 		{
@@ -745,21 +746,15 @@ static void CAN1_Filter_Speed_Init(void)
 
 /* CAN RxCpltCallback function */
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
-{ 
-  uint8_t speed_low8bit = 0;
-  uint8_t speed_high8bit = 0;
+{
   #ifdef BYD_MODEL
-  if((speed_flag==0) && (hcan->pRxMsg->ExtId==0x18FEF100))
-  {
-    speed_low8bit = hcan->pRxMsg->Data[2];
-    speed_high8bit = hcan->pRxMsg->Data[3];
-    vehicle_speed = speed_low8bit + (speed_high8bit << 8);
-    vehicle_speed &= 0xFAFF;
-		vehicle_speed /= 0x0100;
-    speed_flag=1;           //speed数据齐全
-    //CAN_speed_enable=1;
-  }
-  #endif
+		if((speed_flag==0) && (hcan->pRxMsg->ExtId==0x18FEF100))
+		{
+			vehicle_speed=hcan->pRxMsg->Data[2];
+			speed_flag=1;						//speed数据齐全
+			//CAN_speed_enable=1;
+		}
+		#endif
   
   #ifdef KINGLONG_MODEL
   if((speed_flag==0) && (hcan->pRxMsg->ExtId==0x0CFE6CD1))
