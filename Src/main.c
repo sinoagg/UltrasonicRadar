@@ -217,9 +217,7 @@ int main(void)
     HAL_CAN_Receive_IT(&hcan, CAN_FIFO0);         //接收CAN线车速信息
 		HAL_UART_Receive_DMA(&huart1, RadarRxBuf, 32);//接收雷达距离信息
 		HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);//接收屏幕回传指令
-    if(CANSpeedEnable)
-      ;//传递速度信号
-    //WTN6_Broadcast(BELL_BIRD_300MS);
+
 		if(RadarRxComplete == 1)//雷达接收完成，进行解析
 		{
 			RadarRxComplete=0;
@@ -427,6 +425,24 @@ int main(void)
         }
       }
 		}
+		//扬声器报警
+		switch(BellFlag)
+    {
+      case TFT_GREEN:
+        #ifdef BELL_USE
+        WTN6_Broadcast(BELL_BB_1000MS);
+        #endif
+        break;
+      case TFT_YELLOW:
+        #ifdef BELL_USE
+        WTN6_Broadcast(BELL_BIRD_500MS);
+        #endif
+      case TFT_RED:
+        #ifdef BELL_USE
+        WTN6_Broadcast(BELL_BB_200MS);
+        #endif
+      default: break;
+    }
 		
     //显示屏显示车速
     if(speed_flag)
@@ -677,23 +693,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if(htim->Instance == htim2.Instance)
   {
-    switch(BellFlag)
-    {
-      case TFT_GREEN:
-        #ifdef BELL_USE
-        WTN6_Broadcast(BELL_BB_1000MS);
-        #endif
-        break;
-      case TFT_YELLOW:
-        #ifdef BELL_USE
-        WTN6_Broadcast(BELL_BIRD_500MS);
-        #endif
-      case TFT_RED:
-        #ifdef BELL_USE
-        WTN6_Broadcast(BELL_BB_200MS);
-        #endif
-      default: break;
-    }
+		
   }
 }
 
@@ -751,8 +751,8 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 		if((speed_flag==0) && (hcan->pRxMsg->ExtId==0x18FEF100))
 		{
 			vehicle_speed=hcan->pRxMsg->Data[2];
-			speed_flag=1;						//speed数据齐全
-			//CAN_speed_enable=1;
+			speed_flag=1;						//speed数据齐全，赋值flag
+			//CAN_speed_enable=1;//（原）发送flag
 		}
 		#endif
   
@@ -761,7 +761,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
   {
     vehicle_speed = hcan->pRxMsg->Data[7];
     speed_flag=1;           //speed数据齐全
-    //CAN_speed_enable=1;
+    //CAN_speed_enable=1;//（原)发送flag
   }
   #endif
 }
