@@ -53,7 +53,7 @@
 #define TFT_RX_BUF_SIZE 32
 #define CAN_FIFO_NUM_SEL 0
 #define BYD_MODEL 0
-//#define BELL_USE 0
+#define BELL_USE 0
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -761,7 +761,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
   {
     vehicle_speed = hcan->pRxMsg->Data[7];
     speed_flag=1;           //speedÊı¾İÆëÈ«
-    CAN_speed_enable=1;
+    //CAN_speed_enable=1;
   }
   #endif
 }
