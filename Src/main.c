@@ -53,7 +53,7 @@
 #define TFT_RX_BUF_SIZE 32
 #define CAN_FIFO_NUM_SEL 0
 #define BYD_MODEL 0
-#define BELL_USE 0
+#define BELL_ENABLE 0
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -429,16 +429,16 @@ int main(void)
 		switch(BellFlag)
     {
       case TFT_GREEN:
-        #ifdef BELL_USE
+        #ifdef BELL_ENABLE
         WTN6_Broadcast(BELL_BB_1000MS);
         #endif
         break;
       case TFT_YELLOW:
-        #ifdef BELL_USE
+        #ifdef BELL_ENABLE
         WTN6_Broadcast(BELL_BIRD_500MS);
         #endif
       case TFT_RED:
-        #ifdef BELL_USE
+        #ifdef BELL_ENABLE
         WTN6_Broadcast(BELL_BB_200MS);
         #endif
       default: break;

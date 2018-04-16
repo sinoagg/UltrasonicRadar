@@ -1483,7 +1483,7 @@ Image component sizes
        120          8          0          1          0       1876   delay.o
        480         32         54          0          0       3882   dwintft_radar.o
         86          0          0          0          0       1852   internalflash.o
-      2110        254          0         36        524       8807   main.o
+      2110        254          0         36        524       8811   main.o
         36          8        236          0       1024        776   startup_stm32f103xb.o
        108         20          0          4          0       2939   stm32f1xx_hal.o
       2074         16          0          0          0       6369   stm32f1xx_hal_can.o
@@ -1502,7 +1502,7 @@ Image component sizes
        162          4          0          0          0       1214   wtn6.o
 
     ----------------------------------------------------------------------
-     13294        776        348         48       1584     554207   Object Totals
+     13294        776        348         48       1584     554211   Object Totals
          0          0         32          0          0          0   (incl. Generated)
         20          0          2          3          4          0   (incl. Padding)
 
@@ -1544,8 +1544,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     13484        792        348         48       1584     548535   Grand Totals
-     13484        792        348         48       1584     548535   ELF Image Totals
+     13484        792        348         48       1584     548539   Grand Totals
+     13484        792        348         48       1584     548539   ELF Image Totals
      13484        792        348         48          0          0   ROM Totals
 
 ==============================================================================
