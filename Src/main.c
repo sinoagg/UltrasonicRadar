@@ -481,7 +481,9 @@ int main(void)
 					{
 						bell_change = 0;
 						WTN6_Broadcast(BELL_STOP);
+						HAL_Delay(5);
 						WTN6_Broadcast(BELL_BB_1000MS);
+						HAL_Delay(5);
 						WTN6_Broadcast(BELL_WHILE);
 					}
 //					}
@@ -497,7 +499,9 @@ int main(void)
 					{
 						bell_change = 0;
 						WTN6_Broadcast(BELL_STOP);
+						HAL_Delay(5);
 						WTN6_Broadcast(BELL_BB_500MS);
+						HAL_Delay(5);
 						WTN6_Broadcast(BELL_WHILE);
 					}
 //        }
@@ -511,7 +515,9 @@ int main(void)
 					{
 						bell_change = 0;
 						WTN6_Broadcast(BELL_STOP);
+						HAL_Delay(5);
 						WTN6_Broadcast(BELL_BB_200MS);
+						HAL_Delay(5);
 						WTN6_Broadcast(BELL_WHILE);
 					}
 //        }
