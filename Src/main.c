@@ -269,6 +269,11 @@ int main(void)
                   break;
                 default: break;
               }//switchÃΩÕ∑–Ú∫≈
+              
+            }
+						RadarMinDist = Radar_8Probe[0];
+            for(i = 1; i < MAX_PROBE_NUM; i++)
+            {
               if(RadarMinDist >= Radar_8Probe[i])
                 RadarMinDist = Radar_8Probe[i];//—∞’“ÃΩÕ∑◊Ó–°æ‡¿Î
             }
@@ -331,6 +336,11 @@ int main(void)
                   break;
                 default: break;
               }//switchÃΩÕ∑–Ú∫≈
+              
+            }
+						RadarMinDist = Radar_10Probe[0];
+            for(i = 1; i <MAX_PROBE_NUM; i++)
+            {
               if(RadarMinDist >= Radar_10Probe[i])
                 RadarMinDist = Radar_10Probe[i];//—∞’“ÃΩÕ∑◊Ó–°æ‡¿Î
             }
@@ -434,12 +444,16 @@ int main(void)
 		switch(BellFlag)
 		{
 			case TFT_GREEN:
+				
 				#ifdef BELL_ENABLE
-        if(cnt_bell > 400000)
-        {
-          cnt_bell = 0;
-          WTN6_Broadcast(BELL_BB_1000MS);
-        }
+				if(RadarMinDist <= RadarLimitDist)
+				{
+					if(cnt_bell > 400000)
+					{
+						cnt_bell = 0;
+						WTN6_Broadcast(BELL_BB_1000MS);
+					}
+				}
 				#endif
 				break;
 			case TFT_YELLOW:

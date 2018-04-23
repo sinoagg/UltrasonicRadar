@@ -40,12 +40,12 @@ void TFT_DispRadarColor(UART_HandleTypeDef *huart, uint8_t *pRadarColor, uint8_t
 				{
 					TxBuf[7] = TFT_YELLOW;
 				}
-				else	//剩余情况（最大距离的2/3以上）是绿色
-				{
-					TxBuf[7] = TFT_GREEN;
-				}
-				HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 			}
+			else	//剩余情况（最大距离的2/3以上）是绿色
+			{
+				TxBuf[7] = TFT_GREEN;
+			}
+			HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 		}
 	}
 	else	//10探头变量地址从10开始，每个探头+2
