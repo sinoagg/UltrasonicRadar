@@ -36,12 +36,12 @@ uint8_t WTN6_Broadcast(uint8_t addr)
 		return 1;
 }
 
-void WTN6_Repeat(void)
-{
-	WTN6_Broadcast(0xF2);
-}
-	
+//void WTN6_Repeat(void)
+//{
+//	WTN6_Broadcast(0xF2);
+//}
+//	
 void WTN6_SetVolume(uint8_t volume)
 {
-	WTN6_Broadcast(0xE1+volume*5-1);//E0声音最小，EF声音最大
+	WTN6_Broadcast(0xE0+volume*5);//E0声音最小，EF声音最大
 }

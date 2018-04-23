@@ -122,6 +122,7 @@ int main(void)
   uint32_t RadarExchangeLoc2=0x00;      //雷达探头交换位置2
   uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
 	uint8_t AlarmOn=0;
+	uint8_t bell_change = 0;
   uint8_t Radar_Exchange_flag = 0;
 	uint8_t Radar_8Probe[MAX_PROBE_NUM] = {0};
 	uint8_t Radar_10Probe[MAX_PROBE_NUM] = {0};
@@ -280,15 +281,27 @@ int main(void)
             //根据最小距离用喇叭警示
             if(RadarMinDist <= (RadarLimitDist * 1/3))//距离在1m~1.5m
 						{
-              BellFlag = TFT_RED;
+							if(BellFlag != TFT_RED)
+							{
+								bell_change = 1;
+								BellFlag = TFT_RED;
+							}
 						}
             else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))//距离在0.5m~1m
 						{
-              BellFlag = TFT_YELLOW;
+							if(BellFlag != TFT_YELLOW)
+							{
+								bell_change = 1;
+								BellFlag = TFT_YELLOW;
+							}
 						}
             else							//距离在0~0.5m
 						{
-              BellFlag = TFT_GREEN;
+							if(BellFlag != TFT_GREEN)
+							{
+								bell_change = 1;
+								BellFlag = TFT_GREEN;
+							}
 						}
             //显示屏显示最小距离探头数据
             TFT_DispRadarDist(&huart2, Radar_8Probe, RadarMinDist);
@@ -347,15 +360,27 @@ int main(void)
             //根据最小距离设置喇叭警示标志
             if(RadarMinDist < (RadarLimitDist * 1/3))
 						{
-              BellFlag = TFT_RED;
+							if(BellFlag != TFT_RED)
+							{
+								bell_change = 1;
+								BellFlag = TFT_RED;
+							}
 						}
             else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))
 						{
-              BellFlag = TFT_YELLOW;
+							if(BellFlag != TFT_YELLOW)
+							{
+								bell_change = 1;
+								BellFlag = TFT_YELLOW;
+							}
 						}
             else
 						{
-              BellFlag = TFT_GREEN;
+							if(BellFlag != TFT_GREEN)
+							{
+								bell_change = 1;
+								BellFlag = TFT_GREEN;
+							}
 						}
             //显示屏显示0#探头数据
             TFT_DispRadarDist(&huart2, Radar_10Probe, RadarMinDist);
@@ -420,6 +445,7 @@ int main(void)
                 }
                 break;
               case 0x00:        //音量界面-确认按下
+								//if(TFTRxBuf[10] ==
 								WTN6_Volume = TFTRxBuf[10];
                 WTN6_SetVolume(WTN6_Volume);
                 FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
@@ -448,29 +474,47 @@ int main(void)
 				#ifdef BELL_ENABLE
 				if(RadarMinDist <= RadarLimitDist)
 				{
-					if(cnt_bell > 400000)
+//					if(cnt_bell > 400000)
+//					{
+//						cnt_bell = 0;
+					if(bell_change)
 					{
-						cnt_bell = 0;
+						bell_change = 0;
+						WTN6_Broadcast(BELL_STOP);
 						WTN6_Broadcast(BELL_BB_1000MS);
+						WTN6_Broadcast(BELL_WHILE);
 					}
+//					}
 				}
 				#endif
 				break;
 			case TFT_YELLOW:
 				#ifdef BELL_ENABLE
-        if(cnt_bell > 200000)
-        {
-          cnt_bell = 0;
-          WTN6_Broadcast(BELL_BB_1000MS);
-        }
+//        if(cnt_bell > 200000)
+//        {
+//          cnt_bell = 0;
+					if(bell_change)
+					{
+						bell_change = 0;
+						WTN6_Broadcast(BELL_STOP);
+						WTN6_Broadcast(BELL_BB_500MS);
+						WTN6_Broadcast(BELL_WHILE);
+					}
+//        }
 				#endif
 			case TFT_RED:
 				#ifdef BELL_ENABLE
-        if(cnt_bell > 100000)
-        {
-          cnt_bell = 0;
-          WTN6_Broadcast(BELL_BB_1000MS);
-        }
+//        if(cnt_bell > 100000)
+//        {
+//          cnt_bell = 0;
+					if(bell_change)
+					{
+						bell_change = 0;
+						WTN6_Broadcast(BELL_STOP);
+						WTN6_Broadcast(BELL_BB_200MS);
+						WTN6_Broadcast(BELL_WHILE);
+					}
+//        }
 				#endif
 			default: break;
 		}
