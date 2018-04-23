@@ -279,7 +279,7 @@ int main(void)
                 RadarMinDist = Radar_8Probe[i];//寻找探头最小距离
             }
             //根据最小距离用喇叭警示
-            if(RadarMinDist <= (RadarLimitDist * 1/3))//距离在1m~1.5m
+            if(RadarMinDist <= (RadarLimitDist * 1/3))//距离在0~0.5m
 						{
 							if(BellFlag != TFT_RED)
 							{
@@ -295,7 +295,7 @@ int main(void)
 								BellFlag = TFT_YELLOW;
 							}
 						}
-            else							//距离在0~0.5m
+            else							//距离在1~1.5m
 						{
 							if(BellFlag != TFT_GREEN)
 							{
