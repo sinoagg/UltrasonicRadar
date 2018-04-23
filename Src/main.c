@@ -488,6 +488,14 @@ int main(void)
 					}
 //					}
 				}
+				else
+				{
+					if(bell_change)
+					{
+						bell_change = 0;
+						WTN6_Broadcast(BELL_STOP);
+					}
+				}
 				#endif
 				break;
 			case TFT_YELLOW:
