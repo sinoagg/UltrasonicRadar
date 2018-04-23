@@ -116,8 +116,8 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	uint8_t i;
 	uint8_t temp;
-	uint8_t cnt_bell = 0;
-	uint32_t WTN6_Volume=0x01;						//默认最大音量
+	uint32_t cnt_bell = 0;
+	uint32_t WTN6_Volume=0x03;						//默认最大音量
   uint32_t RadarExchangeLoc1=0x00;      //雷达探头交换位置1
   uint32_t RadarExchangeLoc2=0x00;      //雷达探头交换位置2
   uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
@@ -429,27 +429,36 @@ int main(void)
 		}
 		
 		cnt_bell ++;
-		if(cnt_bell > 50)
+	
+		//扬声器报警
+		switch(BellFlag)
 		{
-			cnt_bell = 0;
-			//扬声器报警
-			switch(BellFlag)
-			{
-				case TFT_GREEN:
-					#ifdef BELL_ENABLE
-					WTN6_Broadcast(BELL_BB_1000MS);
-					#endif
-					break;
-				case TFT_YELLOW:
-					#ifdef BELL_ENABLE
-					WTN6_Broadcast(BELL_BIRD_500MS);
-					#endif
-				case TFT_RED:
-					#ifdef BELL_ENABLE
-					WTN6_Broadcast(BELL_BB_200MS);
-					#endif
-				default: break;
-			}
+			case TFT_GREEN:
+				#ifdef BELL_ENABLE
+        if(cnt_bell > 400000)
+        {
+          cnt_bell = 0;
+          WTN6_Broadcast(BELL_BB_1000MS);
+        }
+				#endif
+				break;
+			case TFT_YELLOW:
+				#ifdef BELL_ENABLE
+        if(cnt_bell > 200000)
+        {
+          cnt_bell = 0;
+          WTN6_Broadcast(BELL_BB_1000MS);
+        }
+				#endif
+			case TFT_RED:
+				#ifdef BELL_ENABLE
+        if(cnt_bell > 100000)
+        {
+          cnt_bell = 0;
+          WTN6_Broadcast(BELL_BB_1000MS);
+        }
+				#endif
+			default: break;
 		}
 		
     //显示屏显示车速
