@@ -118,8 +118,8 @@ int main(void)
 	uint8_t temp;
 	uint32_t cnt_bell = 0;
 	uint32_t WTN6_Volume=0x03;						//默认最大音量
-  uint32_t RadarExchangeLoc1=0x00;      //雷达探头交换位置1
-  uint32_t RadarExchangeLoc2=0x00;      //雷达探头交换位置2
+  uint32_t RadarExchangeLoc1=0x33;      //雷达探头交换位置1
+  uint32_t RadarExchangeLoc2=0x33;      //雷达探头交换位置2
   uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
 	uint8_t AlarmOn=0;
 	uint8_t bell_change = 0;
@@ -415,7 +415,7 @@ int main(void)
             switch(TFTRxBuf[5])//解析屏幕按钮按下指令
             {
               case 0x04:        //探头界面-探头按下
-								if(RadarExchangeLoc1 != TFTRxBuf[10])
+								if(RadarExchangeLoc1 != TFTRxBuf[10] - 1)
 								{
 									//存要交换的两个探头位置号（从0开始）
 									if(!Radar_Exchange_flag)
@@ -442,6 +442,8 @@ int main(void)
                   }
                   //调用设置探头函数
                   TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
+									//RadarExchangeLoc1 = 0x33;
+									//RadarExchangeLoc2 = 0x33;
                 }
                 break;
               case 0x00:        //音量界面-确认按下
