@@ -686,7 +686,7 @@ uint8_t GetBellFlag(uint8_t RadarMinDist, uint8_t RadarLimitDist, RadarState_Typ
 {
 	uint8_t BellFlag;
 	//如果前后门任何一个开启或者车速高则进入静音状态
-	if(pRadarState->fornt_door==0||pRadarState->rear_door==0|| pRadarState->vehicle_speed==0)
+	if(pRadarState->fornt_door!=0||pRadarState->rear_door!=0|| pRadarState->vehicle_speed==0)
 		BellFlag=TFT_MUTE;
 	else
 	{
@@ -701,8 +701,8 @@ uint8_t GetBellFlag(uint8_t RadarMinDist, uint8_t RadarLimitDist, RadarState_Typ
 void GetRadarState(RadarState_TypeDef *pRadarState, uint8_t *pRadarRxBuf)
 {
 
-	pRadarState->fornt_door = RadarRxBuf[13] & 0x01;//bit0表示前门，0开1关
-	pRadarState->rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0开1关
+	pRadarState->fornt_door = RadarRxBuf[13] & 0x01;//bit0表示前门，0关1开
+	pRadarState->rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0关1开
 	pRadarState->vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
 	pRadarState->vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
 }
