@@ -5,12 +5,12 @@
  * @param n           [number of probe]
  * @param pRadarDist  [Radar probe pointer]
  */
-void TFT_DispRadarDist(UART_HandleTypeDef *huart, uint8_t *pRadarDist, uint8_t n)
+ //显示雷达最小距离
+void TFT_DispRadarDist(UART_HandleTypeDef *huart, uint8_t RadarMinDist)
 {
 	uint8_t TxBuf[8]={0x5A,0xA5,0x05,0x82,0x12,0x11};//command header,1211 means dinstination
 	TxBuf[6] = 0x00;
-	if(*(pRadarDist + n) <= RadarLimitDist)//雷达探头距离数据范围
-		TxBuf[7] = *(pRadarDist + n);//发送数组的7#为要显示距离的探头的数据
+	TxBuf[7] = RadarMinDist;//发送数组的7#为要显示距离的探头的数据
 	HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 }
 

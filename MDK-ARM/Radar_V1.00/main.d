@@ -32,3 +32,4 @@ radar_v1.00\main.o: ..\Drivers\UserDrivers\WTN6\WTN6.h
 radar_v1.00\main.o: ..\Drivers\UserDrivers\delay\delay.h
 radar_v1.00\main.o: ..\Drivers\UserDrivers\DWINTFT\DWINTFT_Radar.h
 radar_v1.00\main.o: ..\Drivers\UserDrivers\InternalFlash\InternalFlash.h
+radar_v1.00\main.o: ../Inc/hardware_init.h

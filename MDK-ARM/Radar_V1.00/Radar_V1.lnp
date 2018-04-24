@@ -4,6 +4,7 @@
 "radar_v1.00\main.o"
 "radar_v1.00\stm32f1xx_hal_msp.o"
 "radar_v1.00\stm32f1xx_it.o"
+"radar_v1.00\hardware_init.o"
 "radar_v1.00\stm32f1xx_hal_dma.o"
 "radar_v1.00\stm32f1xx_hal_tim.o"
 "radar_v1.00\stm32f1xx_hal_flash_ex.o"
