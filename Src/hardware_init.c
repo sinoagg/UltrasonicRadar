@@ -23,19 +23,20 @@ uint32_t LoadSetVal(uint32_t ParaFlashAddr)
 	return Para;
 }
 
-void LoadSetArray(uint32_t ParaFlashAddr, uint8_t *pData, uint8_t num)					//读取一串uint32_t参数
+void LoadSetArray(uint32_t ParaFlashAddr, uint32_t *pData, uint8_t num)					//读取一串uint32_t参数
 {
 	uint32_t Para;
 	uint8_t i;
 	Para=FlashRead32bit(ParaFlashAddr);
-	if((Para&0xFF)==0xFF)		//如果此地址为空
+	//if(Para!=0xFFFFFFFF)		//清空
+	if((Para&0xFF)==0xFF||(Para&0xFF)==0x00)		//如果此地址为空
 	{
 		FlashWrite_ArrayUint32(ParaFlashAddr, (uint32_t *)pData, num);														//写入默认数组
 	}
 	else
 	{
 		for(i=0;i<num;i++)
-			*(pData+i)=(uint8_t)FlashRead32bit(ParaFlashAddr);
+			*(pData+i)=(uint8_t)FlashRead32bit(ParaFlashAddr+4*i);
 	}
 }
 

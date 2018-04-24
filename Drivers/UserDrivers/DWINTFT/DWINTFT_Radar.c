@@ -83,7 +83,7 @@ void TFT_DispRadarColor(UART_HandleTypeDef *huart, uint8_t *pRadarColor, uint8_t
  * @param pRadarOrder [Radar probe order pointer]
  * @param MaxProbeNum [8 or 10]
  */
-void TFT_SetRadarOrder(UART_HandleTypeDef *huart, uint8_t *pRadarOrder, uint8_t MaxProbeNum)
+void TFT_SetRadarOrder(UART_HandleTypeDef *huart, uint32_t *pRadarOrder, uint8_t MaxProbeNum)
 {
 	uint8_t TxBuf[26] = {0x5A,0xA5,0x13,0x82,0x20,0x04};//command header,to send probe order
 	if(10 == MaxProbeNum)

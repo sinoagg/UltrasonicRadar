@@ -8,7 +8,7 @@
 #define DEFAULT_VOLUME						0x03				//默认音量最大为3
 
 uint32_t LoadSetVal(uint32_t ParaFlashAddr);
-void LoadSetArray(uint32_t ParaFlashAddr, uint8_t *pData, uint8_t num);
+void LoadSetArray(uint32_t ParaFlashAddr, uint32_t *pData, uint8_t num);
 
 #endif
 

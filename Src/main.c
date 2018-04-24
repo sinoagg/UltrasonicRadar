@@ -81,7 +81,7 @@ uint8_t TFTRxBuf[TFT_RX_BUF_SIZE];//触摸屏接收缓存
 uint8_t vehicle_speed = 0;
 uint8_t CANTxBuf[8]={0x00,0x7D,0x7D,0xAF,0x64,0x64,0x64,0xFF};
 uint32_t RadarLimitDist=0x96;					//默认是1.5米
-uint8_t RadarProbeOrder[10]={1,2,3,4,5,6,7,8,9,10};
+uint32_t RadarProbeOrder[10]={1,2,3,4,5,6,7,8,9,10};
 
 
 /* USER CODE END PV */
@@ -108,7 +108,7 @@ typedef struct
 static void CAN1_Filter_Speed_Init(void);
 static void CAN_RxTx_Init(void);
 uint8_t CheckRadarSerialData(uint8_t *pRxBuf);
-void SequenceRadarProbeDist(uint8_t MaxProbeNum, uint8_t *pRadarProbeOrder, uint8_t *pRadarProbeDist, uint8_t *pRadarRxBuf);
+void SequenceRadarProbeDist(uint8_t MaxProbeNum, uint32_t *pRadarProbeOrder, uint8_t *pRadarProbeDist, uint8_t *pRadarRxBuf);
 uint8_t GetRadarMinDist(uint8_t MaxProbeNum, uint8_t *pRadarProbeDist);
 uint8_t GetBellFlag(uint8_t RadarMinDist, uint8_t RadarLimitDist, RadarState_TypeDef *pRadarState);
 void GetRadarState(RadarState_TypeDef *pRadar_State, uint8_t *pRadarRxBuf);
@@ -163,6 +163,7 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
+	HAL_Delay(2000);
   CAN1_Filter_Speed_Init();					//CAN滤波器初始化
   CAN_RxTx_Init();									//CAN发送接收初始化
 	delay_init(72);
@@ -176,7 +177,6 @@ int main(void)
 	WTN6_SetVolume((uint8_t)WTN6_Volume);
 	//探头顺序初始化
 	LoadSetArray(FLASH_USER_START_ADDR+RADAR_PROBE_OFFSET_ADDR, RadarProbeOrder, MaxProbeNum);
-	
   //set RadarProbeOrder
   TFT_SetRadarOrder(&huart2, RadarProbeOrder, MaxProbeNum);
 	
@@ -256,12 +256,9 @@ int main(void)
 									temp = RadarProbeOrder[RadarExchangeLoc1];//交换探头顺序号
 									RadarProbeOrder[RadarExchangeLoc1] = RadarProbeOrder[RadarExchangeLoc2];
                   RadarProbeOrder[RadarExchangeLoc2] = temp;
-                  for(i = 0; i < MAX_PROBE_NUM; i++)    //写flash存探头序号数组
-                  {
-                    FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
-                  }
+                  FlashWrite_ArrayUint32(FLASH_USER_START_ADDR+RADAR_PROBE_OFFSET_ADDR, (uint32_t *)RadarProbeOrder, MaxProbeNum);														//写入默认数组
                   //调用设置探头函数
-                  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
+                  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MaxProbeNum);
                 }
                 break;
               case 0x00:        //音量界面-确认按下
@@ -612,7 +609,7 @@ uint8_t CheckRadarSerialData(uint8_t *pRxBuf)
 		return INVALID;
 }
 
-void SequenceRadarProbeDist(uint8_t MaxProbeNum, uint8_t *pRadarProbeOrder, uint8_t *pRadarProbeDist, uint8_t *pRadarRxBuf)
+void SequenceRadarProbeDist(uint8_t MaxProbeNum, uint32_t *pRadarProbeOrder, uint8_t *pRadarProbeDist, uint8_t *pRadarRxBuf)
 {
 	uint8_t i=0;
 	if(8 == MaxProbeNum)    //如果是8探头
@@ -683,7 +680,7 @@ uint8_t GetBellFlag(uint8_t RadarMinDist, uint8_t RadarLimitDist, RadarState_Typ
 	{
 		if(RadarMinDist <= (RadarLimitDist * 1/3))	BellFlag = TFT_BLINK;							//距离在0.5m
 		else if(RadarMinDist <= (RadarLimitDist * 2/3))  BellFlag = TFT_RED;					//距离在0.5m~1m
-		else if(RadarMinDist <= (RadarLimitDist * 2/3))  BellFlag = TFT_YELLOW;				//距离在1~1.5m
+		else if(RadarMinDist <= RadarLimitDist)  BellFlag = TFT_YELLOW;				//距离在1~1.5m
 		else	BellFlag = TFT_GREEN;																										//距离在1.5m之外
 	}		
 	return BellFlag;
