@@ -42,3 +42,14 @@ void FlashWrite_SingleUint32(uint32_t start_address, uint32_t data)
      to protect the FLASH memory against possible unwanted operation) *********/
   HAL_FLASH_Lock(); 
 }
+
+void FlashWrite_ArrayUint32(uint32_t start_address, uint32_t *pData, uint8_t num)
+{
+	uint8_t i=0;
+	HAL_FLASH_Unlock();
+	FlashErase(start_address,start_address+FLASH_PAGE_SIZE-1);
+	for(i=0;i<num;i++)
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, start_address, *(pData+i));
+	HAL_FLASH_Lock();
+	
+}

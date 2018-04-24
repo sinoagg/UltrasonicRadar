@@ -171,21 +171,12 @@ int main(void)
 	RadarLimitDist = (uint8_t)LoadSetVal(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR);
 	uint8_t RadarProbeDist[8];	//目前缓存里的距离设置为最远距离
 	for(i=0;i<MaxProbeNum;i++) RadarProbeDist[i]=RadarLimitDist;
-	
 	//系统音量初始化
 	WTN6_Volume = (uint8_t)LoadSetVal(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR);
 	WTN6_SetVolume((uint8_t)WTN6_Volume);
+	//探头顺序初始化
+	LoadSetArray(FLASH_USER_START_ADDR+RADAR_PROBE_OFFSET_ADDR, RadarProbeOrder, MaxProbeNum);
 	
-  for(i = 0; i < MaxProbeNum; i++)
-  {
-    RadarProbeOrder[i] = (uint8_t)FlashRead32bit(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04);
-    if(RadarProbeOrder[i] == 0xFF || RadarProbeOrder[i] == 0)
-    {
-      RadarProbeOrder[i] = i + 1;
-      FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
-    }
-		
-  }
   //set RadarProbeOrder
   TFT_SetRadarOrder(&huart2, RadarProbeOrder, MaxProbeNum);
 	
