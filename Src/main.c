@@ -45,6 +45,7 @@
 #include "delay.h"
 #include "DWINTFT_Radar.h"
 #include "InternalFlash.h"
+#include "hardware_init.h"
 
 #define MAX_PROBE_NUM 8
 #define PROBE_VERSION PROBE_VERSION_8
@@ -54,6 +55,8 @@
 #define CAN_FIFO_NUM_SEL 0
 #define BYD_MODEL 0
 #define BELL_ENABLE 0
+#define VALID 0
+#define INVALID 1
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -70,7 +73,6 @@ DMA_HandleTypeDef hdma_usart2_rx;
 /* Private variables ---------------------------------------------------------*/
 uint8_t RadarRxComplete=0;				//雷达串口收到数据标志位
 uint8_t TFTRxComplete=0;					//触摸屏收到数据标志位
-uint8_t BellFlag = TFT_GREEN;
 uint8_t speed_flag = 0;           //收到速度数据信息
 uint8_t CANRxFlag = 0;
 uint8_t CANSpeedEnable;
@@ -78,9 +80,10 @@ uint8_t RadarRxBuf[32];						//雷达接收缓存
 uint8_t TFTRxBuf[TFT_RX_BUF_SIZE];//触摸屏接收缓存
 uint8_t vehicle_speed = 0;
 uint8_t CANTxBuf[8]={0x00,0x7D,0x7D,0xAF,0x64,0x64,0x64,0xFF};
-uint8_t RadarProbeOrder[10] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A};
-uint8_t Radar_checksum = 0;
 uint32_t RadarLimitDist=0x96;					//默认是1.5米
+uint32_t RadarProbeOrder[10]={1,2,3,4,5,6,7,8,9,10};
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -94,16 +97,24 @@ static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-static void CAN1_Filter_Speed_Init(void);
-static void CAN_RxTx_Init(void);
-
-struct 
+typedef struct 
 {
   uint8_t fornt_door;
   uint8_t rear_door;
   uint8_t vehicle_back;
   uint8_t vehicle_speed;
-}Radar_State;
+}RadarState_TypeDef;
+
+static void CAN1_Filter_Speed_Init(void);
+static void CAN_RxTx_Init(void);
+uint8_t CheckRadarSerialData(uint8_t *pRxBuf);
+void SequenceRadarProbeDist(uint8_t MaxProbeNum, uint32_t *pRadarProbeOrder, uint8_t *pRadarProbeDist, uint8_t *pRadarRxBuf);
+uint8_t GetRadarMinDist(uint8_t MaxProbeNum, uint8_t *pRadarProbeDist);
+uint8_t GetBellFlag(uint8_t RadarMinDist, uint8_t RadarLimitDist, RadarState_TypeDef *pRadarState);
+void GetRadarState(RadarState_TypeDef *pRadar_State, uint8_t *pRadarRxBuf);
+void PlayWarningSound(uint8_t BellFlag);
+
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -114,27 +125,17 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	uint8_t i;
+	uint8_t i=0;
 	uint8_t temp;
-	uint32_t cnt_bell = 0;
 	uint32_t WTN6_Volume=0x03;						//默认最大音量
   uint32_t RadarExchangeLoc1=0x33;      //雷达探头交换位置1
   uint32_t RadarExchangeLoc2=0x33;      //雷达探头交换位置2
-  uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
-	uint8_t AlarmOn=0;
-	uint8_t bell_change = 0;
+	uint8_t MaxProbeNum=8;
   uint8_t Radar_Exchange_flag = 0;
-	uint8_t Radar_8Probe[MAX_PROBE_NUM] = {0};
-	uint8_t Radar_10Probe[MAX_PROBE_NUM] = {0};
-	for(i = 0; i < MAX_PROBE_NUM; i++)
-	{
-		Radar_8Probe[i] = RadarLimitDist;
-	}
-	for(i = 0; i < MAX_PROBE_NUM; i++)
-	{
-		Radar_10Probe[i] = RadarLimitDist;
-	}
-
+	RadarState_TypeDef RadarState={0,0,0,0};
+	uint8_t BellFlag = TFT_GREEN;					//所在区域报警声音
+	uint8_t LastBellFlag = TFT_GREEN;			//上次所在区域报警声音
+	uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -162,43 +163,26 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
-  CAN1_Filter_Speed_Init();
-  CAN_RxTx_Init();
+	HAL_Delay(2000);
+  CAN1_Filter_Speed_Init();					//CAN滤波器初始化
+  CAN_RxTx_Init();									//CAN发送接收初始化
 	delay_init(72);
-	TFT_SetProbeVersion(&huart2, PROBE_VERSION);
 
-	
-	RadarLimitDist=FlashRead32bit(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR);
-	if((RadarLimitDist&0xFF)==0xFF)		//如果此地址为空
-	{
-		RadarLimitDist=0x96;
-		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR, RadarLimitDist);
-	}
-	WTN6_Volume=FlashRead32bit(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR);
-	
-	if((WTN6_Volume&0xFF)==0xFF)
-	{
-		WTN6_Volume=0x03;
-		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
-	}
+	TFT_SetProbeVersion(&huart2, PROBE_VERSION);	//设置探头版本
+	//探头距离初始化
+	RadarLimitDist = (uint8_t)LoadSetVal(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR);
+	uint8_t RadarProbeDist[8];	//目前缓存里的距离设置为最远距离
+	for(i=0;i<MaxProbeNum;i++) RadarProbeDist[i]=RadarLimitDist;
+	//系统音量初始化
+	WTN6_Volume = (uint8_t)LoadSetVal(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR);
 	WTN6_SetVolume((uint8_t)WTN6_Volume);
-
-  for(i = 0; i < MAX_PROBE_NUM; i++)
-  {
-    RadarProbeOrder[i] = FlashRead32bit(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04);
-    if((RadarProbeOrder[i] & 0xFF) == 0xFF || RadarProbeOrder[i] == 0)
-    {
-      RadarProbeOrder[i] = i + 1;
-      FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
-    }
-		
-  }
-  
+	//探头顺序初始化
+	LoadSetArray(FLASH_USER_START_ADDR+RADAR_PROBE_OFFSET_ADDR, RadarProbeOrder, MaxProbeNum);
+  //set RadarProbeOrder
+  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MaxProbeNum);
+	
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);//radar interrupt enable
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);//TFT interrupt enable
-
-  //set RadarProbeOrder
-  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
 
   /* USER CODE END 2 */
 
@@ -216,177 +200,20 @@ int main(void)
 		if(RadarRxComplete == 1)//雷达接收完成，进行解析
 		{
 			RadarRxComplete=0;
-			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);//灯闪烁 提示接收到雷达数据
-			uint8_t sum = 0;
-      Radar_checksum = RadarRxBuf[14];//校验和赋值
-      for(i = 1;i < 14;i++)//计算收到的数据的和
-      {
-        sum += RadarRxBuf[i];
-      }
-      if(Radar_checksum == sum)//校验和判断
-      {
-				if(0x55 == RadarRxBuf[0])	//帧开始字节
-  			{
-          if(8 == MAX_PROBE_NUM)    //如果是8探头
-          {
-            //给探头数据赋值
-            //顺序为5#7#8#6#1#2#4#****3#
-            //      1 2 3 4 5 6 7     12
-						for(i = 0; i < MAX_PROBE_NUM; i++)
-            {
-              switch(RadarProbeOrder[i])//根据探头顺序数组找某位置的探头序号
-              {
-                case 5://5号探头
-                  Radar_8Probe[i] = RadarRxBuf[1];//5号探头在i位置，获取它的距离值
-                  break;
-                case 7:
-                  Radar_8Probe[i] = RadarRxBuf[2];
-                  break;
-                case 8:
-                  Radar_8Probe[i] = RadarRxBuf[3];
-                  break;
-                case 6:
-                  Radar_8Probe[i] = RadarRxBuf[4];
-                  break;
-                case 1:
-                  Radar_8Probe[i] = RadarRxBuf[5];
-                  break;
-                case 2:
-                  Radar_8Probe[i] = RadarRxBuf[6];
-                  break;
-                case 4:
-                  Radar_8Probe[i] = RadarRxBuf[7];
-                  break;
-                case 3:
-                  Radar_8Probe[i] = RadarRxBuf[12];
-                  break;
-                default: break;
-              }//switch探头序号
-              
-            }
-						//RadarMinDist = Radar_8Probe[0];
-            RadarMinDist = 0xFD;  //默认没检测到障碍物
-            for(i = 1; i < MAX_PROBE_NUM; i++)
-            {
-              if(RadarMinDist >= Radar_8Probe[i])
-                RadarMinDist = Radar_8Probe[i];//寻找探头最小距离
-            }
-            //根据最小距离用喇叭警示
-            if(RadarMinDist <= (RadarLimitDist * 1/3))//距离在0~0.5m
-						{
-							if(BellFlag != TFT_RED)
-							{
-								bell_change = 1;
-								BellFlag = TFT_RED;
-							}
-						}
-            else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))//距离在0.5m~1m
-						{
-							if(BellFlag != TFT_YELLOW)
-							{
-								bell_change = 1;
-								BellFlag = TFT_YELLOW;
-							}
-						}
-            else							//距离在1~1.5m
-						{
-							if(BellFlag != TFT_GREEN)
-							{
-								bell_change = 1;
-								BellFlag = TFT_GREEN;
-							}
-						}
-            //显示屏显示最小距离探头数据
-						TFT_DispRadarDist(&huart2, RadarMinDist);
-						//显示屏显示颜色（波形）表示探头距离
-						TFT_DispRadarColor(&huart2, Radar_8Probe, MAX_PROBE_NUM);
-					}
-          else                      //10探头
-          {
-            //给探头数据赋值
-            //顺序为8#9#10#*1#2#3#4#5#6#7#*
-            //      1 2 3   5 6 7 8 9 10 11
-            for(i = 0; i < MAX_PROBE_NUM; i++)
-            {
-              switch(RadarProbeOrder[i])//根据探头顺序数组找某位置的探头序号
-              {
-                case 1://1号探头
-                  Radar_10Probe[i] = RadarRxBuf[5];//1号探头在i位置，获取它的距离值
-                  break;
-                case 2:
-                  Radar_10Probe[i] = RadarRxBuf[6];
-                  break;
-                case 3:
-                  Radar_10Probe[i] = RadarRxBuf[7];
-                  break;
-                case 4:
-                  Radar_10Probe[i] = RadarRxBuf[8];
-                  break;
-                case 5:
-                  Radar_10Probe[i] = RadarRxBuf[9];
-                  break;
-                case 6:
-                  Radar_10Probe[i] = RadarRxBuf[10];
-                  break;
-                case 7:
-                  Radar_10Probe[i] = RadarRxBuf[11];
-                  break;
-                case 8:
-                  Radar_10Probe[i] = RadarRxBuf[1];
-                  break;
-                case 9:
-                  Radar_10Probe[i] = RadarRxBuf[2];
-                  break;
-                case 0x0A:
-                  Radar_10Probe[i] = RadarRxBuf[3];
-                  break;
-                default: break;
-              }//switch探头序号
-              
-            }
-						//RadarMinDist = Radar_10Probe[0];
-            RadarMinDist = 0xFD;//默认没检测到障碍物
-            for(i = 1; i <MAX_PROBE_NUM; i++)
-            {
-              if(RadarMinDist >= Radar_10Probe[i])
-                RadarMinDist = Radar_10Probe[i];//寻找探头最小距离
-            }
-            //根据最小距离设置喇叭警示标志
-            if(RadarMinDist < (RadarLimitDist * 1/3))
-						{
-							if(BellFlag != TFT_RED)
-							{
-								bell_change = 1;
-								BellFlag = TFT_RED;
-							}
-						}
-            else if(RadarMinDist <= (RadarLimitDist * 2/3) && RadarMinDist > (RadarLimitDist * 1/3))
-						{
-							if(BellFlag != TFT_YELLOW)
-							{
-								bell_change = 1;
-								BellFlag = TFT_YELLOW;
-							}
-						}
-            else
-						{
-							if(BellFlag != TFT_GREEN)
-							{
-								bell_change = 1;
-								BellFlag = TFT_GREEN;
-							}
-						}
-            //显示屏显示最近探头数据
-            TFT_DispRadarDist(&huart2, RadarMinDist);
-						//显示屏显示颜色（波形）表示探头距离
-						TFT_DispRadarColor(&huart2, Radar_10Probe, MAX_PROBE_NUM);
-					}
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);																				//灯闪烁 提示接收到雷达数据
+			if(VALID == CheckRadarSerialData(RadarRxBuf))																				//如果雷达串口数据校验通过
+			{
+				SequenceRadarProbeDist(MAX_PROBE_NUM, RadarProbeOrder, RadarProbeDist, RadarRxBuf);//将雷达探头数据对应排序
+        RadarMinDist=GetRadarMinDist(MaxProbeNum, RadarProbeDist);												//获取最小雷达探头检测距离
+				GetRadarState(&RadarState, RadarRxBuf);		
+        BellFlag=GetBellFlag(RadarMinDist, RadarLimitDist, &RadarState);									//根据最小距离用喇叭警示
+        if(BellFlag!=LastBellFlag)
+				{
+					PlayWarningSound(BellFlag);
+					LastBellFlag=BellFlag;
 				}
-				//状态信号
-  			Radar_State.fornt_door = RadarRxBuf[13] & 0x01;//bit0表示前门，0开1关
-        Radar_State.rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0开1关
-        Radar_State.vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
-        Radar_State.vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
+				TFT_DispRadarDist(&huart2,  RadarMinDist); 																				//显示屏显示最小距离探头数据
+				TFT_DispRadarColor(&huart2, RadarProbeDist, MaxProbeNum);													//显示屏显示颜色（波形）表示探头距离
 			}
 		}
 
@@ -430,12 +257,10 @@ int main(void)
 									temp = RadarProbeOrder[RadarExchangeLoc1];//交换探头顺序号
 									RadarProbeOrder[RadarExchangeLoc1] = RadarProbeOrder[RadarExchangeLoc2];
                   RadarProbeOrder[RadarExchangeLoc2] = temp;
-                  for(i = 0; i < MAX_PROBE_NUM; i++)    //写falsh存探头序号数组
-                  {
-                    FlashWrite_SingleUint32(FLASH_USER_START_ADDR + RADAR_PROBE_OFFSET_ADDR + i * 0x04, RadarProbeOrder[i]);
-                  }
+                  FlashWrite_ArrayUint32(FLASH_USER_START_ADDR+RADAR_PROBE_OFFSET_ADDR, (uint32_t *)RadarProbeOrder, MaxProbeNum);														//写入默认数组
                   //调用设置探头函数
-                  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
+
+                  TFT_SetRadarOrder(&huart2, RadarProbeOrder, MaxProbeNum);
                 }
                 break;
               case 0x00:        //音量界面-确认按下
@@ -456,76 +281,7 @@ int main(void)
         }
       }
 		}
-		
-		cnt_bell ++;
-	
-		//扬声器报警
-		switch(BellFlag)
-		{
-			case TFT_GREEN:
-				
-				#ifdef BELL_ENABLE
-				if(RadarMinDist <= RadarLimitDist)
-				{
-//					if(cnt_bell > 400000)
-//					{
-//						cnt_bell = 0;
-					if(bell_change)
-					{
-						bell_change = 0;
-						WTN6_Broadcast(BELL_STOP);
-						Delay_us(5);
-						WTN6_Broadcast(BELL_BB_1000MS);
-						Delay_us(5);
-						WTN6_Broadcast(BELL_WHILE);
-					}
-//					}
-				}
-				else
-				{
-					if(bell_change)
-					{
-						bell_change = 0;
-						WTN6_Broadcast(BELL_STOP);
-					}
-				}
-				#endif
-				break;
-			case TFT_YELLOW:
-				#ifdef BELL_ENABLE
-//        if(cnt_bell > 200000)
-//        {
-//          cnt_bell = 0;
-					if(bell_change)
-					{
-						bell_change = 0;
-						WTN6_Broadcast(BELL_STOP);
-						Delay_us(5);
-						WTN6_Broadcast(BELL_BB_500MS);
-						Delay_us(5);
-						WTN6_Broadcast(BELL_WHILE);
-					}
-//        }
-				#endif
-			case TFT_RED:
-				#ifdef BELL_ENABLE
-//        if(cnt_bell > 100000)
-//        {
-//          cnt_bell = 0;
-					if(bell_change)
-					{
-						bell_change = 0;
-						WTN6_Broadcast(BELL_STOP);
-						Delay_us(5);
-						WTN6_Broadcast(BELL_BB_200MS);
-						Delay_us(5);
-						WTN6_Broadcast(BELL_WHILE);
-					}
-//        }
-				#endif
-			default: break;
-		}
-		
+
     //显示屏显示车速
     if(speed_flag)
     {
@@ -533,13 +289,8 @@ int main(void)
       TFT_DispVehicleSpeed(&huart2, vehicle_speed);//send speed read from can
       __HAL_CAN_ENABLE_IT(&hcan,CAN_IT_FMP0); //重新开启FIF00消息挂号中断
     }
-
-		if(AlarmOn==1)
-		{
-		
-		}
-  }
   /* USER CODE END 3 */
+	}
 
 }
 
@@ -842,6 +593,144 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
     //CAN_speed_enable=1;//（原)发送flag
   }
   #endif
+}
+//检查雷达串口数据正确与否
+uint8_t CheckRadarSerialData(uint8_t *pRxBuf)
+{
+	uint8_t sum = 0;
+  uint8_t checksum = *(pRxBuf+14);//校验和赋值
+	uint8_t i=0;
+	for(i = 1;i < 14;i++)//计算收到的数据的和
+	{
+		sum += *(pRxBuf+i);
+	}
+	if(checksum == sum && 0x55 == *pRxBuf)//校验和判断 && 帧开始字节
+		return VALID;
+	else 
+		return INVALID;
+}
+
+void SequenceRadarProbeDist(uint8_t MaxProbeNum, uint32_t *pRadarProbeOrder, uint8_t *pRadarProbeDist, uint8_t *pRadarRxBuf)
+{
+	uint8_t i=0;
+	if(8 == MaxProbeNum)    //如果是8探头
+	{
+		//给探头数据赋值
+		//顺序为5#7#8#6#1#2#4#****3#
+		//      1 2 3 4 5 6 7     12
+		for(i = 0; i < MAX_PROBE_NUM; i++)
+		{
+			switch(RadarProbeOrder[i])//根据探头顺序数组找某位置的探头序号
+			{
+				case 5:*(pRadarProbeDist+i) = RadarRxBuf[1];break;
+				case 7:*(pRadarProbeDist+i) = RadarRxBuf[2];break;		
+				case 8:*(pRadarProbeDist+i) = RadarRxBuf[3];break;
+				case 6:*(pRadarProbeDist+i) = RadarRxBuf[4];break;
+				case 1:*(pRadarProbeDist+i) = RadarRxBuf[5];break;
+				case 2:*(pRadarProbeDist+i) = RadarRxBuf[6];break;
+				case 4:*(pRadarProbeDist+i) = RadarRxBuf[7];break;
+				case 3:*(pRadarProbeDist+i) = RadarRxBuf[12];break;	
+				default: break;
+			}		
+		}
+	}
+	else
+	{
+		//给探头数据赋值
+		//顺序为8#9#10#*1#2#3#4#5#6#7#*
+		//      1 2 3   5 6 7 8 9 10 11
+		for(i = 0; i < MAX_PROBE_NUM; i++)
+		{
+			switch(RadarProbeOrder[i])//根据探头顺序数组找某位置的探头序号
+			{
+				case 1:*(pRadarProbeDist+i) = RadarRxBuf[5];break;
+				case 2:*(pRadarProbeDist+i) = RadarRxBuf[6];break;
+				case 3:*(pRadarProbeDist+i) = RadarRxBuf[7];break;
+				case 4:*(pRadarProbeDist+i) = RadarRxBuf[8];break;
+				case 5:*(pRadarProbeDist+i) = RadarRxBuf[9];break;
+				case 6:*(pRadarProbeDist+i) = RadarRxBuf[10];break;
+				case 7:*(pRadarProbeDist+i) = RadarRxBuf[11];break;
+				case 8:*(pRadarProbeDist+i) = RadarRxBuf[1];break;
+				case 9:*(pRadarProbeDist+i) = RadarRxBuf[2];break;
+				case 10:*(pRadarProbeDist+i) = RadarRxBuf[3];break;
+				default: break;
+			}
+		}
+	}
+}
+
+uint8_t GetRadarMinDist(uint8_t MaxProbeNum, uint8_t *pRadarProbeDist)
+{
+	uint8_t RadarMinDist = 0xFD;
+	uint8_t i=0;
+	for(i = 0; i < MaxProbeNum; i++)
+	{
+		if(RadarMinDist > *(pRadarProbeDist+i))
+			RadarMinDist = *(pRadarProbeDist+i);//寻找探头最小距离
+	}
+	return RadarMinDist;
+}
+
+uint8_t GetBellFlag(uint8_t RadarMinDist, uint8_t RadarLimitDist, RadarState_TypeDef *pRadarState)
+{
+	uint8_t BellFlag;
+	//如果前后门任何一个开启或者车速高则进入静音状态
+	if(pRadarState->fornt_door!=0||pRadarState->rear_door!=0|| pRadarState->vehicle_speed==0)
+		BellFlag=TFT_MUTE;
+	else
+	{
+		if(RadarMinDist <= (RadarLimitDist * 1/3))	BellFlag = TFT_BLINK;							//距离在0.5m
+		else if(RadarMinDist <= (RadarLimitDist * 2/3))  BellFlag = TFT_RED;					//距离在0.5m~1m
+		else if(RadarMinDist <= RadarLimitDist)  BellFlag = TFT_YELLOW;				//距离在1~1.5m
+		else	BellFlag = TFT_GREEN;																										//距离在1.5m之外
+	}		
+	return BellFlag;
+}
+
+void GetRadarState(RadarState_TypeDef *pRadarState, uint8_t *pRadarRxBuf)
+{
+
+	pRadarState->fornt_door = RadarRxBuf[13] & 0x01;//bit0表示前门，0关1开
+	pRadarState->rear_door = (RadarRxBuf[13] & 0x02) >> 1; //bit1表示后门，0关1开
+	pRadarState->vehicle_back = (RadarRxBuf[13] & 0x04) >> 2;  //bit2表示倒车状态，0前1倒
+	pRadarState->vehicle_speed = (RadarRxBuf[13] & 0x08) >> 3; //bit3表示车速，0高1低
+}
+
+void PlayWarningSound(uint8_t BellFlag)
+{
+	switch(BellFlag)
+	{
+		case TFT_BLINK:
+			WTN6_Broadcast(BELL_STOP);
+			Delay_us(2000);
+			WTN6_Broadcast(BELL_BB_200MS);
+			Delay_us(2000);
+			WTN6_Broadcast(BELL_WHILE);
+		break;
+		case TFT_RED:
+			WTN6_Broadcast(BELL_STOP);
+			Delay_us(2000);
+			WTN6_Broadcast(BELL_BB_500MS);
+			Delay_us(2000);
+			WTN6_Broadcast(BELL_WHILE);
+		break;
+		case TFT_YELLOW:
+			WTN6_Broadcast(BELL_STOP);
+			Delay_us(2000);
+			WTN6_Broadcast(BELL_BB_1000MS);
+			Delay_us(2000);
+			WTN6_Broadcast(BELL_WHILE);
+		break;
+		case TFT_GREEN:
+			WTN6_Broadcast(BELL_STOP);
+			Delay_us(2000);
+		break;
+		case TFT_MUTE:
+			WTN6_Broadcast(BELL_STOP);
+			Delay_us(2000);			
+		default:
+			break;
+	}
 }
 /* USER CODE END 4 */
 
