@@ -166,9 +166,7 @@ int main(void)
   CAN_RxTx_Init();
 	delay_init(72);
 	TFT_SetProbeVersion(&huart2, PROBE_VERSION);
-	
-	//WTN6_SetVolume(WIN6_Volume);
-	//WTN6_Broadcast(0xEE);
+
 	
 	RadarLimitDist=FlashRead32bit(FLASH_USER_START_ADDR+RADAR_LIMIT_OFFSET_ADDR);
 	if((RadarLimitDist&0xFF)==0xFF)		//如果此地址为空
@@ -184,8 +182,6 @@ int main(void)
 		FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
 	}
 	WTN6_SetVolume((uint8_t)WTN6_Volume);
-	
-	//WTN6_Broadcast(0x16);
 
   for(i = 0; i < MAX_PROBE_NUM; i++)
   {
@@ -203,10 +199,6 @@ int main(void)
 
   //set RadarProbeOrder
   TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
-  //uint8_t TxBuf[26] = {0X5A, 0XA5, 0X13, 0X82, 0X20, 0X04, 0X00, 0X02, 0X00, 0X01, 0X00, 0X04, 0X00, 0X03, 0X00, 0X06, 0X00, 0X07, 0X00, 0X05, 0X00, 0X08};
-  //HAL_UART_Transmit(&huart2, TxBuf, 26, 100);
-	//TFT_ReadProbeOrder(&huart2);
-	//HAL_UART_Receive_DMA(&huart2, TFTRxBuf, TFT_RX_BUF_SIZE);
 
   /* USER CODE END 2 */
 
@@ -272,7 +264,8 @@ int main(void)
               }//switch探头序号
               
             }
-						RadarMinDist = Radar_8Probe[0];
+						//RadarMinDist = Radar_8Probe[0];
+            RadarMinDist = 0xFD;  //默认没检测到障碍物
             for(i = 1; i < MAX_PROBE_NUM; i++)
             {
               if(RadarMinDist >= Radar_8Probe[i])
@@ -304,7 +297,7 @@ int main(void)
 							}
 						}
             //显示屏显示最小距离探头数据
-            TFT_DispRadarDist(&huart2, Radar_8Probe, RadarMinDist);
+						TFT_DispRadarDist(&huart2, RadarMinDist);
 						//显示屏显示颜色（波形）表示探头距离
 						TFT_DispRadarColor(&huart2, Radar_8Probe, MAX_PROBE_NUM);
 					}
@@ -351,7 +344,8 @@ int main(void)
               }//switch探头序号
               
             }
-						RadarMinDist = Radar_10Probe[0];
+						//RadarMinDist = Radar_10Probe[0];
+            RadarMinDist = 0xFD;//默认没检测到障碍物
             for(i = 1; i <MAX_PROBE_NUM; i++)
             {
               if(RadarMinDist >= Radar_10Probe[i])
@@ -382,8 +376,8 @@ int main(void)
 								BellFlag = TFT_GREEN;
 							}
 						}
-            //显示屏显示0#探头数据
-            TFT_DispRadarDist(&huart2, Radar_10Probe, RadarMinDist);
+            //显示屏显示最近探头数据
+            TFT_DispRadarDist(&huart2, RadarMinDist);
 						//显示屏显示颜色（波形）表示探头距离
 						TFT_DispRadarColor(&huart2, Radar_10Probe, MAX_PROBE_NUM);
 					}
@@ -442,12 +436,9 @@ int main(void)
                   }
                   //调用设置探头函数
                   TFT_SetRadarOrder(&huart2, RadarProbeOrder, MAX_PROBE_NUM);
-									//RadarExchangeLoc1 = 0x33;
-									//RadarExchangeLoc2 = 0x33;
                 }
                 break;
               case 0x00:        //音量界面-确认按下
-								//if(TFTRxBuf[10] ==
 								WTN6_Volume = TFTRxBuf[10];
                 WTN6_SetVolume(WTN6_Volume);
                 FlashWrite_SingleUint32(FLASH_USER_START_ADDR+WTN6_VOLUME_OFFSET_ADDR, WTN6_Volume);
@@ -483,9 +474,9 @@ int main(void)
 					{
 						bell_change = 0;
 						WTN6_Broadcast(BELL_STOP);
-						HAL_Delay(5);
+						Delay_us(5);
 						WTN6_Broadcast(BELL_BB_1000MS);
-						HAL_Delay(5);
+						Delay_us(5);
 						WTN6_Broadcast(BELL_WHILE);
 					}
 //					}
@@ -509,9 +500,9 @@ int main(void)
 					{
 						bell_change = 0;
 						WTN6_Broadcast(BELL_STOP);
-						HAL_Delay(5);
+						Delay_us(5);
 						WTN6_Broadcast(BELL_BB_500MS);
-						HAL_Delay(5);
+						Delay_us(5);
 						WTN6_Broadcast(BELL_WHILE);
 					}
 //        }
@@ -525,9 +516,9 @@ int main(void)
 					{
 						bell_change = 0;
 						WTN6_Broadcast(BELL_STOP);
-						HAL_Delay(5);
+						Delay_us(5);
 						WTN6_Broadcast(BELL_BB_200MS);
-						HAL_Delay(5);
+						Delay_us(5);
 						WTN6_Broadcast(BELL_WHILE);
 					}
 //        }
@@ -542,15 +533,11 @@ int main(void)
       TFT_DispVehicleSpeed(&huart2, vehicle_speed);//send speed read from can
       __HAL_CAN_ENABLE_IT(&hcan,CAN_IT_FMP0); //重新开启FIF00消息挂号中断
     }
-		//TFT_DispVehicleSpeed(&huart2, 0x0A01);
 
 		if(AlarmOn==1)
 		{
 		
 		}
-		//WTN6_Broadcast(0x00);		//播放第一段语音
-		//for(i=0;i<10;i++)
-		//Delay_ms(1000);
   }
   /* USER CODE END 3 */
 
