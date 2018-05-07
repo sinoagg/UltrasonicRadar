@@ -133,8 +133,8 @@ int main(void)
 	uint8_t MaxProbeNum=8;
   uint8_t Radar_Exchange_flag = 0;
 	RadarState_TypeDef RadarState={0,0,0,0};
-	uint8_t BellFlag = TFT_GREEN;					//所在区域报警声音
-	uint8_t LastBellFlag = TFT_GREEN;			//上次所在区域报警声音
+	uint8_t BellFlag = TFT_BLANK;					//所在区域报警声音
+	uint8_t LastBellFlag = TFT_BLANK;			//上次所在区域报警声音
 	uint8_t RadarMinDist = 0x96;          //最大值1.5米，用来存探头最小距离
   /* USER CODE END 1 */
 
@@ -259,7 +259,6 @@ int main(void)
                   RadarProbeOrder[RadarExchangeLoc2] = temp;
                   FlashWrite_ArrayUint32(FLASH_USER_START_ADDR+RADAR_PROBE_OFFSET_ADDR, (uint32_t *)RadarProbeOrder, MaxProbeNum);														//写入默认数组
                   //调用设置探头函数
-
                   TFT_SetRadarOrder(&huart2, RadarProbeOrder, MaxProbeNum);
                 }
                 break;
@@ -676,13 +675,13 @@ uint8_t GetBellFlag(uint8_t RadarMinDist, uint8_t RadarLimitDist, RadarState_Typ
 	uint8_t BellFlag;
 	//如果前后门任何一个开启或者车速高则进入静音状态
 	if(pRadarState->fornt_door!=0||pRadarState->rear_door!=0|| pRadarState->vehicle_speed==0)
-		BellFlag=TFT_MUTE;
+		BellFlag = TFT_MUTE;
 	else
 	{
-		if(RadarMinDist <= (RadarLimitDist * 1/3))	BellFlag = TFT_BLINK;							//距离在0.5m
-		else if(RadarMinDist <= (RadarLimitDist * 2/3))  BellFlag = TFT_RED;					//距离在0.5m~1m
-		else if(RadarMinDist <= RadarLimitDist)  BellFlag = TFT_YELLOW;				//距离在1~1.5m
-		else	BellFlag = TFT_GREEN;																										//距离在1.5m之外
+		if(RadarMinDist <= (RadarLimitDist * 1/3))	BellFlag = TFT_RED;							//距离在0.5m
+		else if(RadarMinDist <= (RadarLimitDist * 2/3))  BellFlag = TFT_YELLOW;			//距离在0.5m~1m
+		else if(RadarMinDist <= RadarLimitDist)  BellFlag = TFT_GREEN;							//距离在1~1.5m
+		else	BellFlag = TFT_BLANK;																									//距离在1.5m之外
 	}		
 	return BellFlag;
 }
@@ -700,34 +699,31 @@ void PlayWarningSound(uint8_t BellFlag)
 {
 	switch(BellFlag)
 	{
-		case TFT_BLINK:
+		case TFT_RED:
 			WTN6_Broadcast(BELL_STOP);
 			Delay_us(2000);
 			WTN6_Broadcast(BELL_BB_200MS);
 			Delay_us(2000);
 			WTN6_Broadcast(BELL_WHILE);
 		break;
-		case TFT_RED:
+		case TFT_YELLOW:
 			WTN6_Broadcast(BELL_STOP);
 			Delay_us(2000);
 			WTN6_Broadcast(BELL_BB_500MS);
 			Delay_us(2000);
 			WTN6_Broadcast(BELL_WHILE);
 		break;
-		case TFT_YELLOW:
+		case TFT_GREEN:
 			WTN6_Broadcast(BELL_STOP);
 			Delay_us(2000);
 			WTN6_Broadcast(BELL_BB_1000MS);
 			Delay_us(2000);
 			WTN6_Broadcast(BELL_WHILE);
 		break;
-		case TFT_GREEN:
+		case TFT_BLANK:
 			WTN6_Broadcast(BELL_STOP);
 			Delay_us(2000);
-		break;
-		case TFT_MUTE:
-			WTN6_Broadcast(BELL_STOP);
-			Delay_us(2000);			
+		break;	
 		default:
 			break;
 	}

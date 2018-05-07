@@ -32,21 +32,21 @@ void TFT_DispRadarColor(UART_HandleTypeDef *huart, uint8_t *pRadarColor, uint8_t
 			TxBuf[6] = 0x00;
 			if(*(pRadarColor + i) <= RadarLimitDist)//雷达探头距离数据范围
 			{
-				if(*(pRadarColor + i) <= RadarLimitDist * 1/3)//最大距离的1/3以内是闪烁
-				{
-					TxBuf[7] = TFT_BLINK;
-				}
-				else if(*(pRadarColor + i) <= RadarLimitDist * 2/3)//最大距离的1/3~2/3是红色
+				if(*(pRadarColor + i) <= RadarLimitDist * 1/3)//最大距离的1/3以内是红色
 				{
 					TxBuf[7] = TFT_RED;
 				}
-				else	//最大距离的2/3~1是黄色
+				else if(*(pRadarColor + i) <= RadarLimitDist * 2/3)//最大距离的1/3~2/3是黄色
 				{
 					TxBuf[7] = TFT_YELLOW;
 				}
+				else	//最大距离的2/3~1是绿色
+				{
+					TxBuf[7] = TFT_GREEN;
+				}
 			}//雷达探头距离范围
-			else	//没检测到障碍物或没插入探头,绿色
-				TxBuf[7] = TFT_GREEN;
+			else	//没检测到障碍物或没插入探头,不显示波形颜色
+				TxBuf[7] = TFT_BLANK;
 			HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 		}
 	}
@@ -58,21 +58,21 @@ void TFT_DispRadarColor(UART_HandleTypeDef *huart, uint8_t *pRadarColor, uint8_t
 			TxBuf[6] = 0x00;
 			if(*(pRadarColor + i) <= RadarLimitDist)//雷达探头距离数据范围
 			{
-				if(*(pRadarColor + i) <= RadarLimitDist * 1/3)//最大距离的1/3以内是闪烁
-				{
-					TxBuf[7] = TFT_BLINK;
-				}
-				else if(*(pRadarColor + i) <= RadarLimitDist * 2/3)//最大距离的1/3~2/3是红色
+				if(*(pRadarColor + i) <= RadarLimitDist * 1/3)//最大距离的1/3以内是红色
 				{
 					TxBuf[7] = TFT_RED;
 				}
-				else	//剩余情况（最大距离的2/3以上）是黄色
+				else if(*(pRadarColor + i) <= RadarLimitDist * 2/3)//最大距离的1/3~2/3是黄色
 				{
 					TxBuf[7] = TFT_YELLOW;
 				}
+				else	//剩余情况（最大距离的2/3以上）是绿色
+				{
+					TxBuf[7] = TFT_GREEN;
+				}
 			}//雷达探头数据范围
-			else	//没检测到障碍物或没插入探头,绿色
-				TxBuf[7] = TFT_GREEN;
+			else	//没检测到障碍物或没插入探头,不显示波形颜色
+				TxBuf[7] = TFT_BLANK;
 			HAL_UART_Transmit(huart, TxBuf, 8, 100);//8 means size,100 timeout
 		}
 	}

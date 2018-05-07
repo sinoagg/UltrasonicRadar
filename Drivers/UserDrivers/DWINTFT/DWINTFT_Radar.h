@@ -7,7 +7,8 @@
 #define TFT_YELLOW 0x01
 #define TFT_GREEN 0x02
 #define TFT_BLINK 0x04
-#define TFT_MUTE 0x05
+#define TFT_MUTE	0x05
+#define TFT_BLANK 0x0A
 
 void TFT_SetProbeVersion(UART_HandleTypeDef *huart, uint8_t ProbeVersion);
 void TFT_SetRadarOrder(UART_HandleTypeDef *huart, uint32_t *pRadarOrder, uint8_t MaxProbeNum);
