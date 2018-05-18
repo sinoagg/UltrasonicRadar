@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=SPEED Pin=P1-7
+Removed Pin From Net: NetName=REVERSE Pin=P1-15
+Added Pin To Net: NetName=REVERSE Pin=P1-7
+Added Pin To Net: NetName=SPEED Pin=P1-15

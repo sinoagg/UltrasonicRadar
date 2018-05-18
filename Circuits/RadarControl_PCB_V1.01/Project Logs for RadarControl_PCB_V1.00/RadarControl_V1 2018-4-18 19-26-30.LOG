@@ -1,0 +1,7 @@
+Added Pin To Net: NetName=PA4 Pin=Q2-3
+Added Pin To Net: NetName=PA5 Pin=Q3-3
+Added Pin To Net: NetName=PA6 Pin=Q4-3
+Added Pin To Net: NetName=PA4 Pin=R12-1
+Added Pin To Net: NetName=PA5 Pin=R13-1
+Added Pin To Net: NetName=PA6 Pin=R14-1
+Added Room: Name=RadarControl_V1.00

@@ -1,0 +1,19 @@
+Added Pin To Net: NetName=PA8 Pin=Q2-3
+Added Pin To Net: NetName=PA8 Pin=R12-1
+Added Pin To Net: NetName=PA8 Pin=U5-29
+Added Net: Name=PA8
+Added Pin To Net: NetName=PB13 Pin=Q3-3
+Added Pin To Net: NetName=PB13 Pin=R13-1
+Added Pin To Net: NetName=PB13 Pin=U5-26
+Added Net: Name=PB13
+Added Pin To Net: NetName=PB14 Pin=Q4-3
+Added Pin To Net: NetName=PB14 Pin=R14-1
+Added Pin To Net: NetName=PB14 Pin=U5-27
+Added Net: Name=PB14
+Added Pin To Net: NetName=PB15 Pin=Q1-3
+Added Pin To Net: NetName=PB15 Pin=R11-1
+Added Pin To Net: NetName=PB15 Pin=U5-28
+Added Net: Name=PB15
+Added Member To Class: ClassName=RadarControl_V1.00 Member=Component D8 SMBJ18CA
+Added Member To Class: ClassName=RadarControl_V1.00 Member=Component F2 SMD1206-010
+Added Member To Class: ClassName=RadarControl_V1.00 Member=Component F4 SMD1206-010
