@@ -1,8 +1,0 @@
-Added Pin To Net: NetName=CAN_L Pin=P2-3
-Added Pin To Net: NetName=CAN_H Pin=P2-4
-Added Pin To Net: NetName=232_TXD3 Pin=P2-7
-Added Pin To Net: NetName=232_RXD3 Pin=P2-8
-Added Pin To Net: NetName=BACKDOOR Pin=P2-1
-Added Net: Name=BACKDOOR
-Added Pin To Net: NetName=REVERSE Pin=P2-2
-Added Net: Name=REVERSE

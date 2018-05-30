@@ -1,5 +1,0 @@
-Removed Pin From Net: NetName=24V Pin=D2-1
-Removed Pin From Net: NetName=NetC4_2 Pin=D2-2
-Change Component Footprint: Designator=D2 Old Footprint=6032_pol New Footprint=B290
-Added Pin To Net: NetName=NetC4_2 Pin=D2-1
-Added Pin To Net: NetName=24V Pin=D2-2

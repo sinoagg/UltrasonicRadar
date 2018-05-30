@@ -1,6 +1,0 @@
-Added Pin To Net: NetName=SPEED Pin=P2-10
-Added Pin To Net: NetName=232_RXD1 Pin=P2-11
-Added Pin To Net: NetName=232_TXD1 Pin=P2-12
-Added Pin To Net: NetName=232_TXD2 Pin=P2-14
-Added Pin To Net: NetName=232_RXD2 Pin=P2-15
-Added Room: Name=RadarControl_V1.00
